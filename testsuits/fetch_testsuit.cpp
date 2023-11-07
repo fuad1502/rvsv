@@ -1,3 +1,4 @@
+#include "rubbler.h"
 #include <Vfetch.h>
 #include <memory>
 #include <verilated.h>
@@ -8,6 +9,8 @@ struct inst_fetch {
   CData opcode;
   CData rs1;
   CData rs2;
+  CData rd;
+  IData valC;
 };
 
 inst_fetch read_fetch(unique_ptr<Vfetch> &fetch,
@@ -19,58 +22,71 @@ void reset_fetch(unique_ptr<Vfetch> &fetch,
 void clock_fetch(unique_ptr<Vfetch> &fetch,
                  unique_ptr<VerilatedContext> &context);
 
+inst_fetch write_and_read_fetch(unique_ptr<Vfetch> &fetch,
+                                unique_ptr<VerilatedContext> &context,
+                                const char *asm_line) {
+  IData inst = decode_asm_line_ffi(asm_line);
+  write_fetch(fetch, context, 0x0, inst);
+  return read_fetch(fetch, context, 0x0);
+}
+
+IData ui(int imm) {
+  return imm & 0xFFFFF000;
+}
+
 int main(int argc, char *argv[]) {
   unique_ptr<VerilatedContext> context(new VerilatedContext());
   unique_ptr<Vfetch> fetch(new Vfetch(context.get(), "fetch"));
 
-  IData inst = 0;
-  CData rs1 = 0b10101;
-  CData rs2 = 0b10001;
-  inst |= rs1 << 15;
-  inst |= rs2 << 20;
-
   reset_fetch(fetch, context);
 
-  inst_fetch res;
-
-  // Set opcode to OP
-  inst &= ~0b01111111;
-  inst |= 0b0110011;
-  write_fetch(fetch, context, 0x0, inst);
-  res = read_fetch(fetch, context, 0x0);
-  VL_PRINTF("inst: %032b\n"
-            "opcode : %07b\n"
-            "rs1: %05b\n"
-            "rs2: %05b\n",
-            inst, res.opcode, res.rs1, res.rs2);
-  assert(res.rs1 == rs1);
-  assert(res.rs2 == rs2);
-
-  // Set opcode to OP-IMM
-  inst &= ~0b01111111;
-  inst |= 0b0010011;
-  write_fetch(fetch, context, 0x0, inst);
-  res = read_fetch(fetch, context, 0x0);
-  VL_PRINTF("inst: %032b\n"
-            "opcode : %07b\n"
-            "rs1: %05b\n"
-            "rs2: %05b\n",
-            inst, res.opcode, res.rs1, res.rs2);
-  assert(res.rs1 == rs1);
+  // Test OP-IMM instruction
+  auto asm_line = "addi t2 t1 -3";
+  auto res = write_and_read_fetch(fetch, context, asm_line);
+  assert(res.rd == 7);
+  assert(res.rs1 == 6);
   assert(res.rs2 == 0);
+  assert(res.valC == -3);
 
-  // Set opcode to INVALID
-  inst &= ~0b01111111;
-  inst |= 0b0000000;
-  write_fetch(fetch, context, 0x0, inst);
-  res = read_fetch(fetch, context, 0x0);
-  VL_PRINTF("inst: %032b\n"
-            "opcode : %07b\n"
-            "rs1: %05b\n"
-            "rs2: %05b\n",
-            inst, res.opcode, res.rs1, res.rs2);
+  // Test U instruction
+  asm_line = "lui t2 -3";
+  res = write_and_read_fetch(fetch, context, asm_line);
+  assert(res.rd == 7);
   assert(res.rs1 == 0);
   assert(res.rs2 == 0);
+  assert(res.valC == ui(-3));
+
+  // Test OP instruction
+  asm_line = "add t2 t1 t0";
+  res = write_and_read_fetch(fetch, context, asm_line);
+  assert(res.rd == 7);
+  assert(res.rs1 == 6);
+  assert(res.rs2 == 5);
+  assert(res.valC == 0);
+
+  // Test JAL instruction
+  asm_line = "jal t2 -3";
+  res = write_and_read_fetch(fetch, context, asm_line);
+  assert(res.rd == 7);
+  assert(res.rs1 == 0);
+  assert(res.rs2 == 0);
+  assert(res.valC == (-3 & 0xFFFFFFFE));
+
+  // Test JALR instruction
+  asm_line = "jalr t2 t1 -3";
+  res = write_and_read_fetch(fetch, context, asm_line);
+  assert(res.rd == 7);
+  assert(res.rs1 == 6);
+  assert(res.rs2 == 0);
+  assert(res.valC == -3);
+
+  // Test B instruction
+  asm_line = "beq t2 t1 -3";
+  res = write_and_read_fetch(fetch, context, asm_line);
+  assert(res.rd == 0);
+  assert(res.rs1 == 7);
+  assert(res.rs2 == 6);
+  assert(res.valC == (-3 & 0xFFFFFFFE));
 
   return 0;
 }
@@ -79,7 +95,7 @@ inst_fetch read_fetch(unique_ptr<Vfetch> &fetch,
                       unique_ptr<VerilatedContext> &context, int pc) {
   fetch->pc = pc;
   fetch->eval();
-  return {fetch->opcode, fetch->rs1, fetch->rs2};
+  return {fetch->opcode, fetch->rs1, fetch->rs2, fetch->rd, fetch->valC};
 }
 
 void write_fetch(unique_ptr<Vfetch> &fetch,
