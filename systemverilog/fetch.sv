@@ -52,8 +52,8 @@ module fetch #(
 
   always_comb begin : setImmediateValue
     case (opcode)
-      OP_IMM, JALR: begin
-        valC = {{20{inst[31]}}, inst[31:20]};
+      OP_IMM, JALR, LOAD: begin
+        valC = {{21{inst[31]}}, inst[30:20]};
       end
       LUI, AUIPC: begin
         valC = {inst[31:12], {12{1'b0}}};
@@ -63,6 +63,9 @@ module fetch #(
       end
       BRANCH: begin
         valC = {{20{inst[31]}}, inst[7], inst[30:25], inst[11:8], 1'b0};
+      end
+      STORE: begin
+        valC = {{21{inst[31]}}, inst[30:25], inst[11:8], inst[7]};
       end
       default: valC = '0;
     endcase

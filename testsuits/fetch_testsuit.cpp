@@ -88,6 +88,24 @@ int main(int argc, char *argv[]) {
   assert(res.rs2 == 6);
   assert(res.valC == (-3 & 0xFFFFFFFE));
 
+  // Test load instruction
+  asm_line = "lw t2 -3(t1)";
+  res = write_and_read_fetch(fetch, context, asm_line);
+  assert(res.rd == 7);
+  assert(res.rs1 == 6);
+  assert(res.rs2 == 0);
+  printf("%032b\n%032b\n", res.valC, -3);
+  assert(res.valC == -3);
+
+  // Test load instruction
+  asm_line = "sw t2 -3(t1)";
+  res = write_and_read_fetch(fetch, context, asm_line);
+  assert(res.rd == 0);
+  assert(res.rs1 == 6);
+  assert(res.rs2 == 7);
+  printf("%032b\n%032b\n", res.valC, -3);
+  assert(res.valC == -3);
+
   return 0;
 }
 
