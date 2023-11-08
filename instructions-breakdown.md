@@ -133,4 +133,4 @@
 | Execute       | valE        <- ALU(valA,valC,ADD)        | valE        <- ALU(valA,valC,ADD)          |
 | Memory        | valM        <- M[valE]                   | M[valE]     <- valB                        |
 | Write Back    | R[rd]       <- valM                      | R[rd]       <- *X*                         |
-| PC Update     | PC          <- PC + 4                    | PC          <- valE : PC + 4               |
+| PC Update     | PC          <- PC + 4                    | PC          <- PC + 4                      |
