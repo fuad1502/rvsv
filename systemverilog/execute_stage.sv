@@ -52,7 +52,7 @@ module execute_stage #(
     endcase
   endfunction
 
-  function automatic logic comp(input logic [XLEN-1] val1, input logic [XLEN-1] val2,
+  function automatic logic comp(input logic [XLEN-1:0] val1, input logic [XLEN-1:0] val2,
                                 input logic [2:0] func3);
     case (func3)
       BEQ: return val1 == val2;
