@@ -1,6 +1,6 @@
 `include "opcodes.sv"
 
-module fetch #(
+module fetch_stage #(
     int XLEN = 32,
     int ILEN = 32
 ) (
@@ -10,18 +10,10 @@ module fetch #(
     output logic [4:0] rs1,
     output logic [4:0] rs2,
     output logic [4:0] rd,
-    input logic [XLEN-1:0] pc,
-    input logic [ILEN-1:0] wdata,
-    input logic write_en,
-    input logic clock,
-    input logic reset_n
+    input logic [XLEN-1:0] inst
 );
 
   import opcodes::*;
-
-  logic [ILEN-1:0] inst;
-
-  inst_mem inst_mem (.*);
 
   assign opcode = inst[6:0];
   assign func   = {inst[31:25], inst[14:12]};

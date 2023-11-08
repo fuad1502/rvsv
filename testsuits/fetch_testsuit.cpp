@@ -1,5 +1,5 @@
 #include "rubbler.h"
-#include <Vfetch.h>
+#include <Vtop_fetch_stage.h>
 #include <memory>
 #include <verilated.h>
 
@@ -13,16 +13,16 @@ struct inst_fetch {
   IData valC;
 };
 
-inst_fetch read_fetch(unique_ptr<Vfetch> &fetch,
+inst_fetch read_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
                       unique_ptr<VerilatedContext> &context, int pc);
-void write_fetch(unique_ptr<Vfetch> &fetch,
+void write_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
                  unique_ptr<VerilatedContext> &context, int pc, int wdata);
-void reset_fetch(unique_ptr<Vfetch> &fetch,
+void reset_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
                  unique_ptr<VerilatedContext> &context);
-void clock_fetch(unique_ptr<Vfetch> &fetch,
+void clock_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
                  unique_ptr<VerilatedContext> &context);
 
-inst_fetch write_and_read_fetch(unique_ptr<Vfetch> &fetch,
+inst_fetch write_and_read_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
                                 unique_ptr<VerilatedContext> &context,
                                 const char *asm_line) {
   IData inst = decode_asm_line_ffi(asm_line);
@@ -30,13 +30,12 @@ inst_fetch write_and_read_fetch(unique_ptr<Vfetch> &fetch,
   return read_fetch(fetch, context, 0x0);
 }
 
-IData ui(int imm) {
-  return imm & 0xFFFFF000;
-}
+IData ui(int imm) { return imm & 0xFFFFF000; }
 
 int main(int argc, char *argv[]) {
   unique_ptr<VerilatedContext> context(new VerilatedContext());
-  unique_ptr<Vfetch> fetch(new Vfetch(context.get(), "fetch"));
+  unique_ptr<Vtop_fetch_stage> fetch(
+      new Vtop_fetch_stage(context.get(), "fetch"));
 
   reset_fetch(fetch, context);
 
@@ -109,14 +108,14 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
-inst_fetch read_fetch(unique_ptr<Vfetch> &fetch,
+inst_fetch read_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
                       unique_ptr<VerilatedContext> &context, int pc) {
   fetch->pc = pc;
   fetch->eval();
   return {fetch->opcode, fetch->rs1, fetch->rs2, fetch->rd, fetch->valC};
 }
 
-void write_fetch(unique_ptr<Vfetch> &fetch,
+void write_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
                  unique_ptr<VerilatedContext> &context, int pc, int wdata) {
   fetch->pc = pc;
   fetch->wdata = wdata;
@@ -125,7 +124,7 @@ void write_fetch(unique_ptr<Vfetch> &fetch,
   fetch->write_en = 0;
 }
 
-void reset_fetch(unique_ptr<Vfetch> &fetch,
+void reset_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
                  unique_ptr<VerilatedContext> &context) {
   fetch->reset_n = 0;
   fetch->write_en = 1;
@@ -134,7 +133,7 @@ void reset_fetch(unique_ptr<Vfetch> &fetch,
   fetch->write_en = 0;
 }
 
-void clock_fetch(unique_ptr<Vfetch> &fetch,
+void clock_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
                  unique_ptr<VerilatedContext> &context) {
   fetch->clock = 0;
   fetch->eval();

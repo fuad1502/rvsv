@@ -6,5 +6,5 @@ add_executable(fetch_testsuit fetch_testsuit.cpp)
 target_link_libraries(fetch_testsuit PRIVATE ${RUBBLER_LIB_DEBUG})
 verilate(fetch_testsuit 
 INCLUDE_DIRS ../systemverilog/ 
-SOURCES ../systemverilog/fetch.sv)
+SOURCES ../systemverilog/top_fetch_stage.sv)
 add_test(NAME fetch_testsuit COMMAND fetch_testsuit)
