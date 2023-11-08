@@ -1,4 +1,6 @@
-module reg_file (
+module reg_file #(
+    int XLEN = 32
+) (
     output logic [XLEN-1:0] val1,
     output logic [XLEN-1:0] val2,
     input logic [4:0] rs1,
