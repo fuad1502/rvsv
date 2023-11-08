@@ -1,4 +1,5 @@
 module memory #(
+    int XLEN = 32,
     logic [31:0] MEM_SIZE = 1024
 ) (
     output logic [XLEN-1:0] valM,
@@ -13,8 +14,10 @@ module memory #(
   logic [7:0] mem[MEM_SIZE];
 
   always_comb begin : setMemFault
-    if (addr >= MEM_SIZE || width > 3'b010) begin
+    if (addr == 0 || addr >= MEM_SIZE || width > 3'b010) begin
       mem_fault = 1;
+    end else begin
+      mem_fault = 0;
     end
   end
 
@@ -26,8 +29,8 @@ module memory #(
     end
   end
 
-  always_ff @(posedge clk) begin : writeMem
-    if (write_en && addr < MEM_SIZE) begin
+  always_ff @(posedge clock) begin : writeMem
+    if (write_en && !mem_fault) begin
       write_mem(.mem(mem), .addr(addr), .width(width));
     end
   end
@@ -52,7 +55,7 @@ module memory #(
         mem[addr]   <= wdata[7:0];
         mem[addr+1] <= wdata[15:8];
       end
-      3'b001: begin
+      3'b010: begin
         mem[addr]   <= wdata[7:0];
         mem[addr+1] <= wdata[15:8];
         mem[addr+2] <= wdata[23:16];
