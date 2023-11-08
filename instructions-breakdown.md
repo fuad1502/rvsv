@@ -110,10 +110,11 @@
 |               | rd          <- *X*                         |
 | Decode        | valA        <- R[rs1]                      |
 |               | valB        <- R[rs2]                      |
-| Execute       | valE        <- ALU(valA,valB,PC,inst:func) |
+| Execute       | valE        <- ALU(PC,valC,ADD)            |
+|               | cond        <- comp(valA, valB, func)      |
 | Memory        |                                            |
 | Write Back    | R[rd]       <- *X*                         |
-| PC Update     | PC          <- cond? valE : PC + 4         |
+| PC Update     | PC          <- cond? valE + 4 : PC + 4     |
 
 # Memory Operations
 - LOAD
