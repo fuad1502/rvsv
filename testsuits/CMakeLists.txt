@@ -8,3 +8,7 @@ verilate(fetch_stage_testsuit
 INCLUDE_DIRS ../systemverilog/ 
 SOURCES ../systemverilog/fetch_stage.sv)
 add_test(NAME fetch_stage_testsuit COMMAND fetch_stage_testsuit)
+
+add_executable(reg_file_testsuit reg_file_testsuit.cpp)
+verilate(reg_file_testsuit SOURCES ../systemverilog/reg_file.sv)
+add_test(NAME reg_file_testsuit COMMAND reg_file_testsuit)
