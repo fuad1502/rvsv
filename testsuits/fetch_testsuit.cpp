@@ -1,138 +1,88 @@
 #include "rubbler.h"
-#include <Vtop_fetch_stage.h>
+#include <Vfetch_stage.h>
 #include <memory>
 #include <verilated.h>
 
 using namespace std;
 
-struct inst_fetch {
-  CData opcode;
-  CData rs1;
-  CData rs2;
-  CData rd;
-  IData valC;
-};
-
-inst_fetch read_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
-                      unique_ptr<VerilatedContext> &context, int pc);
-void write_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
-                 unique_ptr<VerilatedContext> &context, int pc, int wdata);
-void clock_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
-                 unique_ptr<VerilatedContext> &context);
-
-inst_fetch write_and_read_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
-                                unique_ptr<VerilatedContext> &context,
-                                const char *asm_line) {
+void write_asm_line_inst(unique_ptr<Vfetch_stage> &fetch,
+                               unique_ptr<VerilatedContext> &context,
+                               const char *asm_line) {
   IData inst = decode_asm_line_ffi(asm_line);
-  write_fetch(fetch, context, 0x0, inst);
-  return read_fetch(fetch, context, 0x0);
+  fetch->inst = inst;
+  fetch->eval();
 }
 
 IData ui(int imm) { return imm & 0xFFFFF000; }
 
 int main(int argc, char *argv[]) {
   unique_ptr<VerilatedContext> context(new VerilatedContext());
-  unique_ptr<Vtop_fetch_stage> fetch(
-      new Vtop_fetch_stage(context.get(), "fetch"));
+  unique_ptr<Vfetch_stage> fetch(new Vfetch_stage(context.get(), "fetch"));
 
   // Test OP-IMM instruction
   auto asm_line = "addi t2 t1 -3";
-  auto res = write_and_read_fetch(fetch, context, asm_line);
-  assert(res.rd == 7);
-  assert(res.rs1 == 6);
-  assert(res.rs2 == 0);
-  assert(res.valC == -3);
+  write_asm_line_inst(fetch, context, asm_line);
+  assert(fetch->rd == 7);
+  assert(fetch->rs1 == 6);
+  assert(fetch->rs2 == 0);
+  assert(fetch->valC == -3);
 
   // Test U instruction
   asm_line = "lui t2 -3";
-  res = write_and_read_fetch(fetch, context, asm_line);
-  assert(res.rd == 7);
-  assert(res.rs1 == 0);
-  assert(res.rs2 == 0);
-  assert(res.valC == ui(-3));
+  write_asm_line_inst(fetch, context, asm_line);
+  assert(fetch->rd == 7);
+  assert(fetch->rs1 == 0);
+  assert(fetch->rs2 == 0);
+  assert(fetch->valC == ui(-3));
 
   // Test OP instruction
   asm_line = "add t2 t1 t0";
-  res = write_and_read_fetch(fetch, context, asm_line);
-  assert(res.rd == 7);
-  assert(res.rs1 == 6);
-  assert(res.rs2 == 5);
-  assert(res.valC == 0);
+  write_asm_line_inst(fetch, context, asm_line);
+  assert(fetch->rd == 7);
+  assert(fetch->rs1 == 6);
+  assert(fetch->rs2 == 5);
+  assert(fetch->valC == 0);
 
   // Test JAL instruction
   asm_line = "jal t2 -3";
-  res = write_and_read_fetch(fetch, context, asm_line);
-  assert(res.rd == 7);
-  assert(res.rs1 == 0);
-  assert(res.rs2 == 0);
-  assert(res.valC == (-3 & 0xFFFFFFFE));
+  write_asm_line_inst(fetch, context, asm_line);
+  assert(fetch->rd == 7);
+  assert(fetch->rs1 == 0);
+  assert(fetch->rs2 == 0);
+  assert(fetch->valC == (-3 & 0xFFFFFFFE));
 
   // Test JALR instruction
   asm_line = "jalr t2 t1 -3";
-  res = write_and_read_fetch(fetch, context, asm_line);
-  assert(res.rd == 7);
-  assert(res.rs1 == 6);
-  assert(res.rs2 == 0);
-  assert(res.valC == -3);
+  write_asm_line_inst(fetch, context, asm_line);
+  assert(fetch->rd == 7);
+  assert(fetch->rs1 == 6);
+  assert(fetch->rs2 == 0);
+  assert(fetch->valC == -3);
 
   // Test B instruction
   asm_line = "beq t2 t1 -3";
-  res = write_and_read_fetch(fetch, context, asm_line);
-  assert(res.rd == 0);
-  assert(res.rs1 == 7);
-  assert(res.rs2 == 6);
-  assert(res.valC == (-3 & 0xFFFFFFFE));
+  write_asm_line_inst(fetch, context, asm_line);
+  assert(fetch->rd == 0);
+  assert(fetch->rs1 == 7);
+  assert(fetch->rs2 == 6);
+  assert(fetch->valC == (-3 & 0xFFFFFFFE));
 
   // Test load instruction
   asm_line = "lw t2 -3(t1)";
-  res = write_and_read_fetch(fetch, context, asm_line);
-  assert(res.rd == 7);
-  assert(res.rs1 == 6);
-  assert(res.rs2 == 0);
-  printf("%032b\n%032b\n", res.valC, -3);
-  assert(res.valC == -3);
+  write_asm_line_inst(fetch, context, asm_line);
+  assert(fetch->rd == 7);
+  assert(fetch->rs1 == 6);
+  assert(fetch->rs2 == 0);
+  printf("%032b\n%032b\n", fetch->valC, -3);
+  assert(fetch->valC == -3);
 
   // Test load instruction
   asm_line = "sw t2 -3(t1)";
-  res = write_and_read_fetch(fetch, context, asm_line);
-  assert(res.rd == 0);
-  assert(res.rs1 == 6);
-  assert(res.rs2 == 7);
-  printf("%032b\n%032b\n", res.valC, -3);
-  assert(res.valC == -3);
+  write_asm_line_inst(fetch, context, asm_line);
+  assert(fetch->rd == 0);
+  assert(fetch->rs1 == 6);
+  assert(fetch->rs2 == 7);
+  assert(fetch->valC == -3);
 
   return 0;
-}
-
-inst_fetch read_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
-                      unique_ptr<VerilatedContext> &context, int pc) {
-  fetch->pc = pc;
-  fetch->eval();
-  return {fetch->opcode, fetch->rs1, fetch->rs2, fetch->rd, fetch->valC};
-}
-
-void write_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
-                 unique_ptr<VerilatedContext> &context, int pc, int wdata) {
-  fetch->pc = pc;
-  fetch->wdata = wdata;
-  fetch->write_en = 1;
-  clock_fetch(fetch, context);
-  fetch->write_en = 0;
-}
-
-void reset_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
-                 unique_ptr<VerilatedContext> &context) {
-  fetch->write_en = 1;
-  clock_fetch(fetch, context);
-  fetch->write_en = 0;
-}
-
-void clock_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
-                 unique_ptr<VerilatedContext> &context) {
-  fetch->clock = 0;
-  fetch->eval();
-  context->timeInc(1);
-  fetch->clock = 1;
-  fetch->eval();
-  context->timeInc(1);
 }
