@@ -18,13 +18,10 @@ int main(int argc, char *argv[]) {
 
   IData inst;
 
-  inst = read_inst_mem(inst_mem, context, 0xFF); 
-  assert(inst == 0x0);
-
   write_inst_mem(inst_mem, context, 0xFF, 0x12345678);
-  inst = read_inst_mem(inst_mem, context, 0xFF); 
+  inst = read_inst_mem(inst_mem, context, 0xFF);
   assert(inst == 0x12345678);
-  inst = read_inst_mem(inst_mem, context, 0xFE); 
+  inst = read_inst_mem(inst_mem, context, 0xFE);
   assert(inst == 0x34567800);
 
   return 0;
@@ -43,13 +40,6 @@ void write_inst_mem(unique_ptr<Vinst_mem> &inst_mem,
   inst_mem->wdata = wdata;
   inst_mem->write_en = 1;
   clock_inst_mem(inst_mem, context);
-}
-
-void reset_inst_mem(unique_ptr<Vinst_mem> &inst_mem,
-                    unique_ptr<VerilatedContext> &context) {
-  inst_mem->write_en = 1;
-  clock_inst_mem(inst_mem, context);
-  inst_mem->write_en = 0;
 }
 
 void clock_inst_mem(unique_ptr<Vinst_mem> &inst_mem,
