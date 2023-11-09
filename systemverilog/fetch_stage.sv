@@ -10,6 +10,9 @@ module fetch_stage #(
     output logic [4:0] rs1,
     output logic [4:0] rs2,
     output logic [4:0] rd,
+    output logic mem_write_en,
+    output logic mem_read_en,
+    output logic [2:0] mem_width,
     input logic [XLEN-1:0] inst
 );
 
@@ -62,5 +65,9 @@ module fetch_stage #(
       default: valC = '0;
     endcase
   end
+
+  assign mem_write_en = opcode == STORE;
+  assign mem_read_en = opcode == LOAD;
+  assign mem_width = func[2:0];
 
 endmodule

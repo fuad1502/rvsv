@@ -26,6 +26,8 @@ int main(int argc, char *argv[]) {
   assert(fetch->rs1 == 6);
   assert(fetch->rs2 == 0);
   assert(fetch->valC == -3);
+  assert(fetch->mem_write_en == 0);
+  assert(fetch->mem_read_en == 0);
 
   // Test U instruction
   asm_line = "lui t2 -3";
@@ -34,6 +36,8 @@ int main(int argc, char *argv[]) {
   assert(fetch->rs1 == 0);
   assert(fetch->rs2 == 0);
   assert(fetch->valC == ui(-3));
+  assert(fetch->mem_write_en == 0);
+  assert(fetch->mem_read_en == 0);
 
   // Test OP instruction
   asm_line = "add t2 t1 t0";
@@ -42,6 +46,8 @@ int main(int argc, char *argv[]) {
   assert(fetch->rs1 == 6);
   assert(fetch->rs2 == 5);
   assert(fetch->valC == 0);
+  assert(fetch->mem_write_en == 0);
+  assert(fetch->mem_read_en == 0);
 
   // Test JAL instruction
   asm_line = "jal t2 -3";
@@ -50,6 +56,8 @@ int main(int argc, char *argv[]) {
   assert(fetch->rs1 == 0);
   assert(fetch->rs2 == 0);
   assert(fetch->valC == (-3 & 0xFFFFFFFE));
+  assert(fetch->mem_write_en == 0);
+  assert(fetch->mem_read_en == 0);
 
   // Test JALR instruction
   asm_line = "jalr t2 t1 -3";
@@ -58,6 +66,8 @@ int main(int argc, char *argv[]) {
   assert(fetch->rs1 == 6);
   assert(fetch->rs2 == 0);
   assert(fetch->valC == -3);
+  assert(fetch->mem_write_en == 0);
+  assert(fetch->mem_read_en == 0);
 
   // Test B instruction
   asm_line = "beq t2 t1 -3";
@@ -66,6 +76,8 @@ int main(int argc, char *argv[]) {
   assert(fetch->rs1 == 7);
   assert(fetch->rs2 == 6);
   assert(fetch->valC == (-3 & 0xFFFFFFFE));
+  assert(fetch->mem_write_en == 0);
+  assert(fetch->mem_read_en == 0);
 
   // Test load instruction
   asm_line = "lw t2 -3(t1)";
@@ -73,16 +85,21 @@ int main(int argc, char *argv[]) {
   assert(fetch->rd == 7);
   assert(fetch->rs1 == 6);
   assert(fetch->rs2 == 0);
-  printf("%032b\n%032b\n", fetch->valC, -3);
   assert(fetch->valC == -3);
+  assert(fetch->mem_write_en == 0);
+  assert(fetch->mem_read_en == 1);
+  assert(fetch->mem_width == 2);
 
-  // Test load instruction
+  // Test store instruction
   asm_line = "sw t2 -3(t1)";
   write_asm_line_inst(fetch, context, asm_line);
   assert(fetch->rd == 0);
   assert(fetch->rs1 == 6);
   assert(fetch->rs2 == 7);
   assert(fetch->valC == -3);
+  assert(fetch->mem_write_en == 1);
+  assert(fetch->mem_read_en == 0);
+  assert(fetch->mem_width == 2);
 
   return 0;
 }
