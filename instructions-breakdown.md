@@ -87,9 +87,10 @@
 | Decode        | valA        <- *X*                       | valA        <- R[rs1]                    |
 |               | valB        <- *X*                       | valB        <- *X*                       |
 | Execute       | valE        <- ALU(PC,valC,ADD)          | valE        <- ALU(valA,valC,ADD)        |
+|               | cond        <= 1                         | cond        <- 1                         |
 | Memory        |                                          |                                          |
-| Write Back    | R[rd]       <- valE                      | R[rd]       <- valE                      |
-| PC Update     | PC          <- valE + 4                  | PC          <- valE + 4                  |
+| Write Back    | R[rd]       <- valE + 4                  | R[rd]       <- valE + 4                  |
+| PC Update     | PC          <- cond? valE : PC + 4       | PC          <- cond? valE : PC + 4       |
 
 # Conditional Branch
 - BEQ
@@ -114,7 +115,7 @@
 |               | cond        <- comp(valA, valB, func)      |
 | Memory        |                                            |
 | Write Back    | R[rd]       <- *X*                         |
-| PC Update     | PC          <- cond? valE + 4 : PC + 4     |
+| PC Update     | PC          <- cond? valE : PC + 4         |
 
 # Memory Operations
 - LOAD
