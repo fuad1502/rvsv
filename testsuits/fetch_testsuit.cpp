@@ -17,8 +17,6 @@ inst_fetch read_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
                       unique_ptr<VerilatedContext> &context, int pc);
 void write_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
                  unique_ptr<VerilatedContext> &context, int pc, int wdata);
-void reset_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
-                 unique_ptr<VerilatedContext> &context);
 void clock_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
                  unique_ptr<VerilatedContext> &context);
 
@@ -36,8 +34,6 @@ int main(int argc, char *argv[]) {
   unique_ptr<VerilatedContext> context(new VerilatedContext());
   unique_ptr<Vtop_fetch_stage> fetch(
       new Vtop_fetch_stage(context.get(), "fetch"));
-
-  reset_fetch(fetch, context);
 
   // Test OP-IMM instruction
   auto asm_line = "addi t2 t1 -3";
@@ -126,10 +122,8 @@ void write_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
 
 void reset_fetch(unique_ptr<Vtop_fetch_stage> &fetch,
                  unique_ptr<VerilatedContext> &context) {
-  fetch->reset_n = 0;
   fetch->write_en = 1;
   clock_fetch(fetch, context);
-  fetch->reset_n = 1;
   fetch->write_en = 0;
 }
 

@@ -11,8 +11,7 @@ module top_fetch_stage #(
     input logic [ILEN-1:0] pc,
     input logic [ILEN-1:0] wdata,
     input logic write_en,
-    input logic clock,
-    input logic reset_n
+    input logic clock
 );
 
   logic [ILEN-1:0] inst;

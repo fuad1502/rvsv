@@ -9,8 +9,6 @@ IData read_inst_mem(unique_ptr<Vinst_mem> &inst_mem,
                     unique_ptr<VerilatedContext> &context, int pc);
 void write_inst_mem(unique_ptr<Vinst_mem> &inst_mem,
                     unique_ptr<VerilatedContext> &context, int pc, int wdata);
-void reset_inst_mem(unique_ptr<Vinst_mem> &inst_mem,
-                    unique_ptr<VerilatedContext> &context);
 void clock_inst_mem(unique_ptr<Vinst_mem> &inst_mem,
                     unique_ptr<VerilatedContext> &context);
 
@@ -20,7 +18,6 @@ int main(int argc, char *argv[]) {
 
   IData inst;
 
-  reset_inst_mem(inst_mem, context);
   inst = read_inst_mem(inst_mem, context, 0xFF); 
   assert(inst == 0x0);
 
@@ -50,10 +47,8 @@ void write_inst_mem(unique_ptr<Vinst_mem> &inst_mem,
 
 void reset_inst_mem(unique_ptr<Vinst_mem> &inst_mem,
                     unique_ptr<VerilatedContext> &context) {
-  inst_mem->reset_n = 0;
   inst_mem->write_en = 1;
   clock_inst_mem(inst_mem, context);
-  inst_mem->reset_n = 1;
   inst_mem->write_en = 0;
 }
 

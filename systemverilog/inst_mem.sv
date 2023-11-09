@@ -6,16 +6,13 @@ module inst_mem #(
     input logic [XLEN-1:0] pc,
     input logic [ILEN-1:0] wdata,
     input logic write_en,
-    input logic clock,
-    input logic reset_n
+    input logic clock
 );
 
   logic [7:0] mem[1024];
 
   always_ff @(posedge clock) begin
-    if (write_en && !reset_n) begin
-      mem <= '{default: '0};
-    end else if (write_en) begin
+    if (write_en) begin
       {mem[pc+3], mem[pc+2], mem[pc+1], mem[pc+0]} <= wdata;
     end
   end
