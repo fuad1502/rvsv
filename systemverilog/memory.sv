@@ -7,6 +7,7 @@ module memory #(
     input logic [XLEN-1:0] addr,
     input logic [XLEN-1:0] wdata,
     input logic [2:0] width,
+    input logic read_en,
     input logic write_en,
     input logic clock
 );
@@ -14,7 +15,7 @@ module memory #(
   logic [7:0] mem[MEM_SIZE];
 
   always_comb begin : setMemFault
-    if (addr == 0 || addr >= MEM_SIZE || width > 3'b010) begin
+    if ((read_en || write_en) && (addr == 0 || addr >= MEM_SIZE || width > 3'b010)) begin
       mem_fault = 1;
     end else begin
       mem_fault = 0;
@@ -22,10 +23,10 @@ module memory #(
   end
 
   always_comb begin : readMem
-    if (addr >= MEM_SIZE) begin
-      valM = '0;
-    end else begin
+    if (read_en && !mem_fault) begin
       valM = read_mem(.mem(mem), .addr(addr), .width(width));
+    end else begin
+      valM = 0;
     end
   end
 
