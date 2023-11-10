@@ -12,3 +12,10 @@ add_test(NAME fetch_stage_testsuit COMMAND fetch_stage_testsuit)
 add_executable(reg_file_testsuit reg_file_testsuit.cpp)
 verilate(reg_file_testsuit SOURCES ../systemverilog/reg_file.sv)
 add_test(NAME reg_file_testsuit COMMAND reg_file_testsuit)
+
+add_executable(execute_stage_testsuit execute_stage_testsuit.cpp)
+target_link_libraries(execute_stage_testsuit PRIVATE ${RUBBLER_LIB_DEBUG})
+verilate(execute_stage_testsuit 
+INCLUDE_DIRS ../systemverilog/ 
+SOURCES ../systemverilog/execute_stage_tb.sv)
+add_test(NAME execute_stage_testsuit COMMAND execute_stage_testsuit)
