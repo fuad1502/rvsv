@@ -43,7 +43,7 @@ package operations;
 
     static function logic [XLEN-1:0] sra_f(input logic [XLEN-1:0] val1,
                                            input logic [XLEN-1:0] val2);
-      return signed'(val1) >>> signed'(val2[4:0]);
+      return signed'(val1) >>> val2[4:0];
     endfunction
 
     static function logic [XLEN-1:0] sub_f(input logic [XLEN-1:0] val1,

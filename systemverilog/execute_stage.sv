@@ -68,16 +68,17 @@ module execute_stage #(
       SLTI: return Operations#(.XLEN(XLEN))::slt_f(val1, val2);
       SLTIU: return Operations#(.XLEN(XLEN))::sltu_f(val1, val2);
       SLLI:
-      case (valC[31:25])
+      case (valC[11:5])
         7'b0000000: return Operations#(.XLEN(XLEN))::sll_f(val1, val2);
         default: return '0;
       endcase
-      SRLI_SRAI:
-      case (valC[31:25])
-        7'b0000000: return Operations#(.XLEN(XLEN))::srl_f(val1, val2);
-        7'b0100000: return Operations#(.XLEN(XLEN))::sra_f(val1, val2);
-        default: return '0;
-      endcase
+      SRLI_SRAI: begin
+        case (valC[11:5])
+          7'b0000000: return Operations#(.XLEN(XLEN))::srl_f(val1, val2);
+          7'b0100000: return Operations#(.XLEN(XLEN))::sra_f(val1, val2);
+          default: return '0;
+        endcase
+      end
       default: return '0;
     endcase
   endfunction
