@@ -13,7 +13,17 @@ package function_codes;
     SRL  = {riscv_instr::SRL[31:25], riscv_instr::SRL[14:12]},
     SRA  = {riscv_instr::SRA[31:25], riscv_instr::SRA[14:12]},
     SUB  = {riscv_instr::SUB[31:25], riscv_instr::SUB[14:12]}
-  } funct7_func3_t;
+  } op_funct7_func3_t;
+  typedef enum logic [2:0] {
+    ADDI = riscv_instr::ADDI[14:12],
+    ANDI = riscv_instr::ANDI[14:12],
+    ORI = riscv_instr::ORI[14:12],
+    XORI = riscv_instr::XORI[14:12],
+    SLTI = riscv_instr::SLTI[14:12],
+    SLTIU = riscv_instr::SLTIU[14:12],
+    SLLI = riscv_instr::SLLI[14:12],
+    SRLI_SRAI = riscv_instr::SRLI[14:12]
+  } op_imm_func3_t;
   typedef enum logic [2:0] {
     BEQ  = riscv_instr::BEQ[14:12],
     BNE  = riscv_instr::BNE[14:12],

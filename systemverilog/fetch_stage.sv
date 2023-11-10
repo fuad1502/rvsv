@@ -5,7 +5,8 @@ module fetch_stage #(
     int ILEN = 32
 ) (
     output wire [6:0] opcode,
-    output wire [9:0] func,
+    output wire [2:0] func3,
+    output wire [6:0] func7,
     output logic [XLEN-1:0] valC,
     output logic [4:0] rs1,
     output logic [4:0] rs2,
@@ -19,7 +20,8 @@ module fetch_stage #(
   import opcodes::*;
 
   assign opcode = inst[6:0];
-  assign func   = {inst[31:25], inst[14:12]};
+  assign func3  = inst[14:12];
+  assign func7  = inst[31:25];
 
   always_comb begin : setSourceRegister
     case (opcode)
@@ -68,6 +70,6 @@ module fetch_stage #(
 
   assign mem_write_en = opcode == STORE;
   assign mem_read_en = opcode == LOAD;
-  assign mem_width = func[2:0];
+  assign mem_width = inst[14:12];
 
 endmodule
