@@ -132,6 +132,18 @@ int main(int argc, char *argv[]) {
   printf("result = %08x\n", execute_stage->valE);
   assert(execute_stage->valE == expected_valE);
 
+  ////////////////////////// TEST JAL & JALR //////////////////////////
+  // Test JAL
+  asm_line = "jal t2 0x12345678";
+  evaluate(execute_stage, asm_line, t1, t0, pc);
+  expected_valE = (0x12345678 & 0xFFFFFFFE | 0xFFE00000) + pc;
+  assert(execute_stage->valE == expected_valE);
+  // Test JALR
+  asm_line = "jalr t2 t1 0x12345678";
+  evaluate(execute_stage, asm_line, t1, t0, pc);
+  expected_valE = (0x12345678 & 0x00000FFF) + t1;
+  assert(execute_stage->valE == expected_valE);
+
   return 0;
 }
 
