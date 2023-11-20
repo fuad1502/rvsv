@@ -231,6 +231,18 @@ int main(int argc, char *argv[]) {
   assert(execute_stage->cond == ((unsigned) t0 >= (unsigned) t1));
   assert(execute_stage->cond == 0);
 
+  ////////////////////////// TEST LOAD STORE INSTRUCTIONS //////////////////////////
+  // Test LOAD
+  asm_line = "lw t2 0x12345678(t1)";
+  evaluate(execute_stage, asm_line, t1, t0, pc);
+  expected_valE = (0x12345678 & 0x00000FFF) + t1;
+  assert(execute_stage->valE == expected_valE);
+  // Test STORE
+  asm_line = "sw t2 0x12345678(t1)";
+  evaluate(execute_stage, asm_line, t1, t0, pc);
+  expected_valE = (0x12345678 & 0x00000FFF) + t1;
+  assert(execute_stage->valE == expected_valE);
+
   return 0;
 }
 
