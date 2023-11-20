@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
       new Vexecute_stage_tb(context.get(), "EXECUTE_STAGE"));
 
   int t1 = 0x87654321;
-  int t0 = 0x87654321;
+  int t0 = -3;
   int pc = 0x87654321;
 
   ////////////////////////// TEST OP-IMM //////////////////////////
@@ -67,6 +67,57 @@ int main(int argc, char *argv[]) {
   assert(execute_stage->valE == expected_valE);
 
   ////////////////////////// TEST OP //////////////////////////
+  // Test ADD
+  asm_line = "add t2 t1 t0";
+  evaluate(execute_stage, asm_line, t1, t0, pc);
+  expected_valE = t1 + t0;
+  assert(execute_stage->valE == expected_valE);
+  // Test AND
+  asm_line = "and t2 t1 t0";
+  evaluate(execute_stage, asm_line, t1, t0, pc);
+  expected_valE = t1 & t0;
+  assert(execute_stage->valE == expected_valE);
+  // Test OR
+  asm_line = "or t2 t1 t0";
+  evaluate(execute_stage, asm_line, t1, t0, pc);
+  expected_valE = t1 | t0;
+  assert(execute_stage->valE == expected_valE);
+  // Test XOR
+  asm_line = "xor t2 t1 t0";
+  evaluate(execute_stage, asm_line, t1, t0, pc);
+  expected_valE = t1 ^ t0;
+  assert(execute_stage->valE == expected_valE);
+  // Test SLT
+  asm_line = "slt t2 t1 t0";
+  evaluate(execute_stage, asm_line, t1, t0, pc);
+  expected_valE = 1;
+  assert(execute_stage->valE == expected_valE);
+  // Test SLTU
+  asm_line = "sltu t2 t1 t0";
+  evaluate(execute_stage, asm_line, t1, t0, pc);
+  expected_valE = 1;
+  assert(execute_stage->valE == expected_valE);
+  // Test SLL
+  t0 = 4;
+  asm_line = "sll t2 t1 t0";
+  evaluate(execute_stage, asm_line, t1, t0, pc);
+  expected_valE = t1 << t0;
+  assert(execute_stage->valE == expected_valE);
+  // Test SRL
+  asm_line = "srl t2 t1 t0";
+  evaluate(execute_stage, asm_line, t1, t0, pc);
+  expected_valE = (unsigned int)t1 >> t0;
+  assert(execute_stage->valE == expected_valE);
+  // Test SRA
+  asm_line = "sra t2 t1 t0";
+  evaluate(execute_stage, asm_line, t1, t0, pc);
+  expected_valE = t1 >> t0;
+  assert(execute_stage->valE == expected_valE);
+  // Test SUB
+  asm_line = "sub t2 t1 t0";
+  evaluate(execute_stage, asm_line, t1, t0, pc);
+  expected_valE = t1 - t0;
+  assert(execute_stage->valE == expected_valE);
 
   return 0;
 }
