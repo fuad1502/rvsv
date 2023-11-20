@@ -129,20 +129,107 @@ int main(int argc, char *argv[]) {
   asm_line = "auipc t1 0x12345678";
   evaluate(execute_stage, asm_line, t1, t0, pc);
   expected_valE = 0x12345000 + pc;
-  printf("result = %08x\n", execute_stage->valE);
   assert(execute_stage->valE == expected_valE);
 
   ////////////////////////// TEST JAL & JALR //////////////////////////
   // Test JAL
   asm_line = "jal t2 0x12345678";
   evaluate(execute_stage, asm_line, t1, t0, pc);
-  expected_valE = (0x12345678 & 0xFFFFFFFE | 0xFFE00000) + pc;
+  expected_valE = (0x12345678 & 0x001FFFFE | 0xFFE00000) + pc;
   assert(execute_stage->valE == expected_valE);
   // Test JALR
   asm_line = "jalr t2 t1 0x12345678";
   evaluate(execute_stage, asm_line, t1, t0, pc);
   expected_valE = (0x12345678 & 0x00000FFF) + t1;
   assert(execute_stage->valE == expected_valE);
+
+  ////////////////////////// TEST BRANCH INSTRUCTIONS //////////////////////////
+  // Test BEQ
+  asm_line = "beq t1 t0 0x12345678";
+  evaluate(execute_stage, asm_line, t1, t0, pc);
+  expected_valE = (0x12345678 & 0x00001FFE | 0xFFFFE000) + pc;
+  assert(execute_stage->valE == expected_valE);
+  assert(execute_stage->cond == (t1 == t0));
+  asm_line = "beq t1 t1 0x12345678";
+  evaluate(execute_stage, asm_line, t1, t1, pc);
+  expected_valE = (0x12345678 & 0x00001FFE | 0xFFFFE000) + pc;
+  assert(execute_stage->valE == expected_valE);
+  assert(execute_stage->cond == (t1 == t1));
+  // Test BNE
+  asm_line = "bne t1 t0 0x12345678";
+  evaluate(execute_stage, asm_line, t1, t0, pc);
+  expected_valE = (0x12345678 & 0x00001FFE | 0xFFFFE000) + pc;
+  assert(execute_stage->valE == expected_valE);
+  assert(execute_stage->cond == (t1 != t0));
+  asm_line = "bne t1 t1 0x12345678";
+  evaluate(execute_stage, asm_line, t1, t1, pc);
+  expected_valE = (0x12345678 & 0x00001FFE | 0xFFFFE000) + pc;
+  assert(execute_stage->valE == expected_valE);
+  assert(execute_stage->cond == (t1 != t1));
+  // Test BLT
+  asm_line = "blt t1 t0 0x12345678";
+  evaluate(execute_stage, asm_line, t1, t0, pc);
+  expected_valE = (0x12345678 & 0x00001FFE | 0xFFFFE000) + pc;
+  assert(execute_stage->valE == expected_valE);
+  assert(execute_stage->cond == (t1 < t0));
+  asm_line = "blt t1 t1 0x12345678";
+  evaluate(execute_stage, asm_line, t1, t1, pc);
+  expected_valE = (0x12345678 & 0x00001FFE | 0xFFFFE000) + pc;
+  assert(execute_stage->valE == expected_valE);
+  assert(execute_stage->cond == (t1 < t1));
+  asm_line = "blt t0 t1 0x12345678";
+  evaluate(execute_stage, asm_line, t0, t1, pc);
+  expected_valE = (0x12345678 & 0x00001FFE | 0xFFFFE000) + pc;
+  assert(execute_stage->valE == expected_valE);
+  assert(execute_stage->cond == (t0 < t1));
+  // Test BLTU
+  asm_line = "bltu t1 t0 0x12345678";
+  evaluate(execute_stage, asm_line, t1, t0, pc);
+  expected_valE = (0x12345678 & 0x00001FFE | 0xFFFFE000) + pc;
+  assert(execute_stage->valE == expected_valE);
+  assert(execute_stage->cond == ((unsigned) t1 < (unsigned) t0));
+  asm_line = "bltu t1 t1 0x12345678";
+  evaluate(execute_stage, asm_line, t1, t1, pc);
+  expected_valE = (0x12345678 & 0x00001FFE | 0xFFFFE000) + pc;
+  assert(execute_stage->valE == expected_valE);
+  assert(execute_stage->cond == ((unsigned) t1 < (unsigned) t1));
+  asm_line = "bltu t0 t1 0x12345678";
+  evaluate(execute_stage, asm_line, t0, t1, pc);
+  expected_valE = (0x12345678 & 0x00001FFE | 0xFFFFE000) + pc;
+  assert(execute_stage->valE == expected_valE);
+  assert(execute_stage->cond == ((unsigned) t0 < (unsigned) t1));
+  // Test BGE
+  asm_line = "bge t1 t0 0x12345678";
+  evaluate(execute_stage, asm_line, t1, t0, pc);
+  expected_valE = (0x12345678 & 0x00001FFE | 0xFFFFE000) + pc;
+  assert(execute_stage->valE == expected_valE);
+  assert(execute_stage->cond == (t1 >= t0));
+  asm_line = "bge t1 t1 0x12345678";
+  evaluate(execute_stage, asm_line, t1, t1, pc);
+  expected_valE = (0x12345678 & 0x00001FFE | 0xFFFFE000) + pc;
+  assert(execute_stage->valE == expected_valE);
+  assert(execute_stage->cond == (t1 >= t1));
+  asm_line = "bge t0 t1 0x12345678";
+  evaluate(execute_stage, asm_line, t0, t1, pc);
+  expected_valE = (0x12345678 & 0x00001FFE | 0xFFFFE000) + pc;
+  assert(execute_stage->valE == expected_valE);
+  assert(execute_stage->cond == (t0 >= t1));
+  // Test BGEU
+  asm_line = "bgeu t1 t0 0x12345678";
+  evaluate(execute_stage, asm_line, t1, t0, pc);
+  expected_valE = (0x12345678 & 0x00001FFE | 0xFFFFE000) + pc;
+  assert(execute_stage->valE == expected_valE);
+  assert(execute_stage->cond == ((unsigned) t1 >= (unsigned) t0));
+  asm_line = "bgeu t1 t1 0x12345678";
+  evaluate(execute_stage, asm_line, t1, t1, pc);
+  expected_valE = (0x12345678 & 0x00001FFE | 0xFFFFE000) + pc;
+  assert(execute_stage->valE == expected_valE);
+  assert(execute_stage->cond == ((unsigned) t1 >= (unsigned) t1));
+  asm_line = "bgeu t0 t1 0x12345678";
+  evaluate(execute_stage, asm_line, t0, t1, pc);
+  expected_valE = (0x12345678 & 0x00001FFE | 0xFFFFE000) + pc;
+  assert(execute_stage->cond == ((unsigned) t0 >= (unsigned) t1));
+  assert(execute_stage->cond == 0);
 
   return 0;
 }
