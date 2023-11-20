@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
 
   int t1 = 0x87654321;
   int t0 = -3;
-  int pc = 0x87654321;
+  int pc = 0x12345678;
 
   ////////////////////////// TEST OP-IMM //////////////////////////
   // Test ADDI
@@ -117,6 +117,19 @@ int main(int argc, char *argv[]) {
   asm_line = "sub t2 t1 t0";
   evaluate(execute_stage, asm_line, t1, t0, pc);
   expected_valE = t1 - t0;
+  assert(execute_stage->valE == expected_valE);
+
+  ////////////////////////// TEST LUI & AUIPC //////////////////////////
+  // Test LUI
+  asm_line = "lui t2 0x12345678";
+  evaluate(execute_stage, asm_line, t1, t0, pc);
+  expected_valE = 0x12345678 & 0xFFFFF000;
+  assert(execute_stage->valE == expected_valE);
+  // Test AUIPC
+  asm_line = "auipc t1 0x12345678";
+  evaluate(execute_stage, asm_line, t1, t0, pc);
+  expected_valE = 0x12345000 + pc;
+  printf("result = %08x\n", execute_stage->valE);
   assert(execute_stage->valE == expected_valE);
 
   return 0;
