@@ -15,6 +15,7 @@ module fetch_stage #(
     output logic mem_read_en,
     output logic [1:0] mem_width,
     output logic sign_extend,
+    output logic inst_fault,
     input logic [XLEN-1:0] inst
 );
 
@@ -73,5 +74,12 @@ module fetch_stage #(
   assign mem_read_en = opcode == LOAD;
   assign mem_width = func3[1:0];
   assign sign_extend = ~func3[2];
+
+  always_comb begin : setInstFault
+    case (opcode)
+      OP, OP_IMM, LUI, AUIPC, JAL, JALR, LOAD: inst_fault = 0;
+      default: inst_fault = 1;
+    endcase
+  end
 
 endmodule
