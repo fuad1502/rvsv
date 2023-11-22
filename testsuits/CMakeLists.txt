@@ -19,3 +19,11 @@ verilate(execute_stage_testsuit
 INCLUDE_DIRS ../systemverilog/ 
 SOURCES ../systemverilog/execute_stage_tb.sv)
 add_test(NAME execute_stage_testsuit COMMAND execute_stage_testsuit)
+
+add_executable(memory_testsuit memory_testsuit.cpp)
+target_link_libraries(memory_testsuit PRIVATE ${RUBBLER_LIB_DEBUG})
+verilate(memory_testsuit 
+INCLUDE_DIRS ../systemverilog/ 
+SOURCES ../systemverilog/memory_tb.sv)
+configure_file(${CMAKE_SOURCE_DIR}/systemverilog/memory_tb_pattern.txt ${CMAKE_BINARY_DIR}/testsuits/memory_tb_pattern.txt COPYONLY)
+add_test(NAME memory_testsuit COMMAND memory_testsuit)

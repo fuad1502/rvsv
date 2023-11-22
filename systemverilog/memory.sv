@@ -15,10 +15,23 @@ module memory #(
   logic [7:0] mem[MEM_SIZE];
 
   always_comb begin : setMemFault
-    if ((read_en || write_en) && (addr == 0 || addr >= MEM_SIZE || width > 3'b010)) begin
-      mem_fault = 1;
-    end else begin
-      mem_fault = 0;
+    mem_fault = 0;
+    if (read_en || write_en) begin
+      if (width > 3'b010) begin
+        mem_fault = 1;
+      end
+      if (addr == '0 || addr >= MEM_SIZE) begin
+        mem_fault = 1;
+      end
+      if (width > 3'b000 && ((addr + 1) == '0 || (addr + 1) >= MEM_SIZE)) begin
+        mem_fault = 1;
+      end
+      if (width > 3'b001 && ((addr + 2) == '0 || (addr + 2) >= MEM_SIZE)) begin
+        mem_fault = 1;
+      end
+      if (width > 3'b001 && ((addr + 3) == '0 || (addr + 3) >= MEM_SIZE)) begin
+        mem_fault = 1;
+      end
     end
   end
 
@@ -26,16 +39,32 @@ module memory #(
     if (read_en && !mem_fault) begin
       valM = read_mem(.mem(mem), .addr(addr), .width(width));
     end else begin
-      valM = 0;
+      valM = '0;
     end
   end
 
   always_ff @(posedge clock) begin : writeMem
     if (write_en && !mem_fault) begin
-      write_mem(.mem(mem), .addr(addr), .width(width));
+      case (width)
+        3'b000: begin
+          mem[addr] <= wdata[7:0];
+        end
+        3'b001: begin
+          mem[addr]   <= wdata[7:0];
+          mem[addr+1] <= wdata[15:8];
+        end
+        3'b010: begin
+          mem[addr]   <= wdata[7:0];
+          mem[addr+1] <= wdata[15:8];
+          mem[addr+2] <= wdata[23:16];
+          mem[addr+3] <= wdata[31:24];
+        end
+        default: ;
+      endcase
     end
   end
 
+  // TODO: Support sign extension
   function automatic logic [XLEN-1:0] read_mem(
       input logic [7:0] mem[MEM_SIZE], input logic [XLEN-1:0] addr, input logic [2:0] width);
     case (width)
@@ -45,26 +74,5 @@ module memory #(
       default: return '0;
     endcase
   endfunction
-
-  function automatic void write_mem(output logic [7:0] mem[MEM_SIZE], input logic [XLEN-1:0] addr,
-                                    input logic [2:0] width);
-    case (width)
-      3'b000: begin
-        mem[addr] <= wdata[7:0];
-      end
-      3'b001: begin
-        mem[addr]   <= wdata[7:0];
-        mem[addr+1] <= wdata[15:8];
-      end
-      3'b010: begin
-        mem[addr]   <= wdata[7:0];
-        mem[addr+1] <= wdata[15:8];
-        mem[addr+2] <= wdata[23:16];
-        mem[addr+3] <= wdata[31:24];
-      end
-      default: ;
-    endcase
-  endfunction
-
 
 endmodule
