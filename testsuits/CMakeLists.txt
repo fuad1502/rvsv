@@ -27,3 +27,10 @@ INCLUDE_DIRS ../systemverilog/
 SOURCES ../systemverilog/memory_tb.sv)
 configure_file(${CMAKE_SOURCE_DIR}/systemverilog/memory_tb_pattern.txt ${CMAKE_BINARY_DIR}/testsuits/memory_tb_pattern.txt COPYONLY)
 add_test(NAME memory_testsuit COMMAND memory_testsuit)
+
+add_executable(rv32i_seq_testsuit rv32i_seq_testsuit.cpp)
+target_link_libraries(rv32i_seq_testsuit PRIVATE ${RUBBLER_LIB_DEBUG})
+verilate(rv32i_seq_testsuit 
+INCLUDE_DIRS ../systemverilog/ 
+SOURCES ../systemverilog/rv32i_seq.sv)
+add_test(NAME rv32i_seq_testsuit COMMAND rv32i_seq_testsuit)
