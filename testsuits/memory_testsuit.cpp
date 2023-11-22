@@ -25,21 +25,36 @@ int main(int argc, char *argv[]) {
   memory->addr = 0xFF;
   memory->read_en = 1;
   memory->write_en = 0;
-  // Test single byte read
+  // Test single byte read (signed)
   memory->width = 0b000;
+  memory->sign_extend = 1;
   memory->eval();
   assert(memory->mem_fault == 0);
-  assert(memory->valM == 0x12);
-  // Test two bytes read
+  assert(memory->valM == 0xFFFFFF98);
+  // Test single byte read (unsigned)
+  memory->width = 0b000;
+  memory->sign_extend = 0;
+  memory->eval();
+  assert(memory->mem_fault == 0);
+  assert(memory->valM == 0x00000098);
+  // Test two bytes read (signed)
   memory->width = 0b001;
+  memory->sign_extend = 1;
   memory->eval();
   assert(memory->mem_fault == 0);
-  assert(memory->valM == 0x3412);
-  // Test four bytes read
+  assert(memory->valM == 0xFFFFBA98);
+  // Test two bytes read (unsigned)
+  memory->width = 0b001;
+  memory->sign_extend = 0;
+  memory->eval();
+  assert(memory->mem_fault == 0);
+  assert(memory->valM == 0x0000BA98);
+  // Test four bytes read (signed)
   memory->width = 0b010;
+  memory->sign_extend = 1;
   memory->eval();
   assert(memory->mem_fault == 0);
-  assert(memory->valM == 0x78563412);
+  assert(memory->valM == 0xFEDCBA98);
 
   ///////////////////// TEST MEMORY WRITE //////////////////////
   // Common input signals
@@ -65,7 +80,7 @@ int main(int argc, char *argv[]) {
   assert(memory->mem_fault == 0);
   assert(memory->read_mem(0xCC, 4) == 0x12345678);
 
-  ///////////////////// TEST MEMORY WRITE //////////////////////
+  ///////////////////// TEST MEMORY FAULT //////////////////////
   // First byte accesses address 0 
   memory->addr = 0x0;
   memory->width = 0b000;

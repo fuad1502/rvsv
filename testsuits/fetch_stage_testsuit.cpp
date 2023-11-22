@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
   assert(fetch->mem_read_en == 0);
 
   // Test load instruction
-  asm_line = "lw t2 -3(t1)";
+  asm_line = "lh t2 -3(t1)";
   write_asm_line_inst(fetch, context, asm_line);
   assert(fetch->rd == 7);
   assert(fetch->rs1 == 6);
@@ -88,10 +88,14 @@ int main(int argc, char *argv[]) {
   assert(fetch->valC == -3);
   assert(fetch->mem_write_en == 0);
   assert(fetch->mem_read_en == 1);
-  assert(fetch->mem_width == 2);
+  assert(fetch->mem_width == 1);
+  assert(fetch->sign_extend == 1);
+  asm_line = "lhu t2 -3(t1)";
+  write_asm_line_inst(fetch, context, asm_line);
+  assert(fetch->sign_extend == 0);
 
   // Test store instruction
-  asm_line = "sw t2 -3(t1)";
+  asm_line = "sh t2 -3(t1)";
   write_asm_line_inst(fetch, context, asm_line);
   assert(fetch->rd == 0);
   assert(fetch->rs1 == 6);
@@ -99,7 +103,7 @@ int main(int argc, char *argv[]) {
   assert(fetch->valC == -3);
   assert(fetch->mem_write_en == 1);
   assert(fetch->mem_read_en == 0);
-  assert(fetch->mem_width == 2);
+  assert(fetch->mem_width == 1);
 
   return 0;
 }

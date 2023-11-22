@@ -6,7 +6,8 @@ module memory #(
     output logic mem_fault,
     input logic [XLEN-1:0] addr,
     input logic [XLEN-1:0] wdata,
-    input logic [2:0] width,
+    input logic [1:0] width,
+    input logic sign_extend,
     input logic read_en,
     input logic write_en,
     input logic clock
@@ -17,19 +18,19 @@ module memory #(
   always_comb begin : setMemFault
     mem_fault = 0;
     if (read_en || write_en) begin
-      if (width > 3'b010) begin
+      if (width == 2'b11) begin
         mem_fault = 1;
       end
       if (addr == '0 || addr >= MEM_SIZE) begin
         mem_fault = 1;
       end
-      if (width > 3'b000 && ((addr + 1) == '0 || (addr + 1) >= MEM_SIZE)) begin
+      if (width > 2'b00 && ((addr + 1) == '0 || (addr + 1) >= MEM_SIZE)) begin
         mem_fault = 1;
       end
-      if (width > 3'b001 && ((addr + 2) == '0 || (addr + 2) >= MEM_SIZE)) begin
+      if (width > 2'b01 && ((addr + 2) == '0 || (addr + 2) >= MEM_SIZE)) begin
         mem_fault = 1;
       end
-      if (width > 3'b001 && ((addr + 3) == '0 || (addr + 3) >= MEM_SIZE)) begin
+      if (width > 2'b01 && ((addr + 3) == '0 || (addr + 3) >= MEM_SIZE)) begin
         mem_fault = 1;
       end
     end
@@ -46,14 +47,14 @@ module memory #(
   always_ff @(posedge clock) begin : writeMem
     if (write_en && !mem_fault) begin
       case (width)
-        3'b000: begin
+        2'b00: begin
           mem[addr] <= wdata[7:0];
         end
-        3'b001: begin
+        2'b01: begin
           mem[addr]   <= wdata[7:0];
           mem[addr+1] <= wdata[15:8];
         end
-        3'b010: begin
+        2'b10: begin
           mem[addr]   <= wdata[7:0];
           mem[addr+1] <= wdata[15:8];
           mem[addr+2] <= wdata[23:16];
@@ -64,13 +65,20 @@ module memory #(
     end
   end
 
-  // TODO: Support sign extension
   function automatic logic [XLEN-1:0] read_mem(
-      input logic [7:0] mem[MEM_SIZE], input logic [XLEN-1:0] addr, input logic [2:0] width);
+      input logic [7:0] mem[MEM_SIZE], input logic [XLEN-1:0] addr, input logic [1:0] width);
+    logic sign = 0;
+    if (sign_extend) begin
+      case (width)
+        2'b00: sign = mem[addr][7];
+        2'b01: sign = mem[addr + 1][7];
+        default: sign = 0;
+      endcase
+    end
     case (width)
-      3'b000:  return {8'b0, 8'b0, 8'b0, mem[addr]};
-      3'b001:  return {8'b0, 8'b0, mem[addr+1], mem[addr]};
-      3'b010:  return {mem[addr+3], mem[addr+2], mem[addr+1], mem[addr]};
+      2'b00:   return {{24{sign}}, mem[addr]};
+      2'b01:   return {{16{sign}}, mem[addr+1], mem[addr]};
+      2'b10:   return {mem[addr+3], mem[addr+2], mem[addr+1], mem[addr]};
       default: return '0;
     endcase
   endfunction

@@ -3,9 +3,10 @@ module memory_tb #(
 ) (
     output logic [XLEN-1:0] valM,
     output logic mem_fault,
-    input logic [XLEN-1:0] wdata,
     input logic [XLEN-1:0] addr,
-    input logic [2:0] width,
+    input logic [XLEN-1:0] wdata,
+    input logic [1:0] width,
+    input logic sign_extend,
     input logic read_en,
     input logic write_en,
     input logic clock

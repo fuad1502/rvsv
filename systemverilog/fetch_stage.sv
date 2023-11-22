@@ -13,7 +13,8 @@ module fetch_stage #(
     output logic [4:0] rd,
     output logic mem_write_en,
     output logic mem_read_en,
-    output logic [2:0] mem_width,
+    output logic [1:0] mem_width,
+    output logic sign_extend,
     input logic [XLEN-1:0] inst
 );
 
@@ -70,6 +71,7 @@ module fetch_stage #(
 
   assign mem_write_en = opcode == STORE;
   assign mem_read_en = opcode == LOAD;
-  assign mem_width = inst[14:12];
+  assign mem_width = func3[1:0];
+  assign sign_extend = ~func3[2];
 
 endmodule

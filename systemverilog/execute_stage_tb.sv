@@ -22,6 +22,7 @@ module execute_stage_tb #(
       .mem_write_en(),
       .mem_read_en(),
       .mem_width(),
+      .sign_extend(),
       .*
   );
   execute_stage execute_stage_inst (.*);
