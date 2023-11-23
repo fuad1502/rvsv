@@ -1,6 +1,6 @@
 module memory #(
     int XLEN = 32,
-    logic [31:0] MEM_SIZE = 1024
+    logic [XLEN-1:0] MEM_SIZE = 1024
 ) (
     output logic [XLEN-1:0] valM,
     output logic mem_fault,

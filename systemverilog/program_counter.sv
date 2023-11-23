@@ -22,7 +22,7 @@ module program_counter #(
     if (!reset_n) begin
       pc <= '0;
     end else begin
-      pc <= next_pc;
+      pc <= {next_pc[XLEN-1:1], 1'b0};
     end
   end
 
