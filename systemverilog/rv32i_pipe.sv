@@ -234,7 +234,9 @@ module rv32i_pipe #(
       .clock
   );
 
-  // Register forwarding
+  /////////////////////////////////////////////////
+  // REGISTER FORWARDING                         //
+  /////////////////////////////////////////////////
   always_comb begin : register_forwarding
     // RegSrc1
     d_valA = valA;
