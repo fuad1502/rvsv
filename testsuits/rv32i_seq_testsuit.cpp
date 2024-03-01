@@ -28,7 +28,7 @@ void test_fibonacci(int n, int expected_result,
   assert(ok);
   bytes_to_pattern_file(bytes, 128, "code_hex.txt");
   rv32i_tb->write_inst_mem("code_hex.txt");
-  rv32i_tb->write_reg_file(10, 12);
+  rv32i_tb->write_reg_file(10, n);
   while (rv32i_tb->rv32i_seq_tb->inst_fault != 1) {
     context->timeInc(1);
     rv32i_tb->eval();
@@ -46,5 +46,5 @@ int main(int argc, char *argv[]) {
   assert(scope); // Check for nullptr if scope not found
   svSetScope(scope);
 
-  test_fibonacci(11, 144, context, rv32i_tb);
+  test_fibonacci(12, 144, context, rv32i_tb);
 }

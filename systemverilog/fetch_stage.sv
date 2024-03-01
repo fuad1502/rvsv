@@ -77,7 +77,7 @@ module fetch_stage #(
 
   always_comb begin : setInstFault
     case (opcode)
-      OP, OP_IMM, LUI, AUIPC, JAL, JALR, LOAD: inst_fault = 0;
+      OP, OP_IMM, LUI, AUIPC, JAL, JALR, LOAD, STORE, BRANCH: inst_fault = 0;
       default: inst_fault = 1;
     endcase
   end
