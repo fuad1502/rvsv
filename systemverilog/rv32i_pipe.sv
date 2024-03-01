@@ -154,13 +154,14 @@ module rv32i_pipe #(
     D_inst_fault_fetch <= f_inst_fault_fetch;
   end
   // Output of fetch stage
-  wire [XLEN-1:0] d_valA, d_valB;
+  logic [XLEN-1:0] d_valA, d_valB;
 
+  wire [XLEN-1:0] valA, valB;
   reg_file #(
       .XLEN(XLEN)
   ) reg_file_inst (
-      .valA(d_valA),
-      .valB(d_valB),
+      .valA(valA),
+      .valB(valB),
       .rs1(D_rs1),
       .rs2(D_rs2),
       .rd(W_rd),
@@ -168,6 +169,52 @@ module rv32i_pipe #(
       .write_en(1),
       .clock
   );
+
+  // Register forwarding
+  always_comb begin : register_forwarding
+    // RegSrc1
+    d_valA = valA;
+    if (D_rs1 == E_rd) begin
+      case (E_opcode)
+        JAL, JALR: d_valA = e_valE + 4;
+        LOAD: d_valA = valA;
+        default: d_valA = e_valE;
+      endcase
+    end else if (D_rs1 == M_rd) begin
+      case (M_opcode)
+        JAL, JALR: d_valA = M_valE + 4;
+        LOAD: d_valA = valA;
+        default: d_valA = M_valE;
+      endcase
+    end else if (D_rs1 == W_rd) begin
+      case (E_opcode)
+        JAL, JALR: d_valA = W_valE + 4;
+        LOAD: d_valA = valA;
+        default: d_valA = W_valE;
+      endcase
+    end
+    // RegSrc2
+    d_valB = valB;
+    if (D_rs2 == E_rd) begin
+      case (E_opcode)
+        JAL, JALR: d_valB = e_valE + 4;
+        LOAD: d_valB = valB;
+        default: d_valB = e_valE;
+      endcase
+    end else if (D_rs2 == M_rd) begin
+      case (M_opcode)
+        JAL, JALR: d_valB = M_valE + 4;
+        LOAD: d_valB = valB;
+        default: d_valB = M_valE;
+      endcase
+    end else if (D_rs2 == W_rd) begin
+      case (E_opcode)
+        JAL, JALR: d_valB = W_valE + 4;
+        LOAD: d_valB = valB;
+        default: d_valB = W_valE;
+      endcase
+    end
+  end
 
   /////////////////////////////////////////////////
   // EXECUTE STAGE                               //
