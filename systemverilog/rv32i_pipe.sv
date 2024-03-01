@@ -17,17 +17,33 @@ module rv32i_pipe #(
   /////////////////////////////////////////////////
   logic reset_d, reset_e, reset_m, reset_w;
   always_comb begin : misprediction_bubbles
+    stall = 0;
     if (!reset_n) begin
+      stall   = 0;
       reset_d = 0;
       reset_e = 0;
       reset_m = 0;
       reset_w = 0;
     end else if (e_cond == 1) begin
+      stall   = 0;
       reset_d = 0;
       reset_e = 0;
       reset_m = 1;
       reset_w = 1;
+    end else if ((D_rs1 == E_rd || D_rs2 == E_rd) && E_opcode == LOAD) begin
+      stall   = 1;
+      reset_d = 1;
+      reset_e = 0;
+      reset_m = 1;
+      reset_w = 1;
+    end else if ((D_rs1 == M_rd || D_rs2 == M_rd) && M_opcode == LOAD) begin
+      stall   = 1;
+      reset_d = 1;
+      reset_e = 0;
+      reset_m = 1;
+      reset_w = 1;
     end else begin
+      stall   = 0;
       reset_d = 1;
       reset_e = 1;
       reset_m = 1;
@@ -130,12 +146,14 @@ module rv32i_pipe #(
   wire f_sign_extend;
   wire f_inst_fault_fetch;
 
+  logic stall;
   program_counter #(
       .XLEN(XLEN)
   ) program_counter_inst (
       .pc  (f_pc),
       .addr(e_valE),
       .jump(e_cond),
+      .stall,
       .clock,
       .reset_n
   );
@@ -201,7 +219,7 @@ module rv32i_pipe #(
       D_mem_width <= 0;
       D_sign_extend <= 0;
       D_inst_fault_fetch <= 0;
-    end else begin
+    end else if (!stall) begin
       D_pc <= f_pc;
       D_opcode <= f_opcode;
       D_func7 <= f_func7;
@@ -253,9 +271,9 @@ module rv32i_pipe #(
         default: d_valA = M_valE;
       endcase
     end else if (D_rs1 == W_rd) begin
-      case (E_opcode)
+      case (W_opcode)
         JAL, JALR: d_valA = W_valE + 4;
-        LOAD: d_valA = valA;
+        LOAD: d_valA = W_valM;
         default: d_valA = W_valE;
       endcase
     end
@@ -274,9 +292,9 @@ module rv32i_pipe #(
         default: d_valB = M_valE;
       endcase
     end else if (D_rs2 == W_rd) begin
-      case (E_opcode)
+      case (W_opcode)
         JAL, JALR: d_valB = W_valE + 4;
-        LOAD: d_valB = valB;
+        LOAD: d_valB = W_valM;
         default: d_valB = W_valE;
       endcase
     end

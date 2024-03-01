@@ -32,7 +32,21 @@ void run_bytes(uint8_t *bytes, const size_t size,
     rv32i_tb->eval();
     context->timeInc(1);
     printf("a0 = %d\n", rv32i_tb->read_reg_file(10));
+    printf("pc = %d\n", rv32i_tb->rv32i_pipe_tb->__PVT__inst__DOT__f_pc);
+    printf("exec = %d\n",
+           rv32i_tb->rv32i_pipe_tb->__PVT__inst__DOT__W_inst_fault_execute);
+    printf("mem = %d\n",
+           rv32i_tb->rv32i_pipe_tb->__PVT__inst__DOT__W_mem_fault);
+    printf("fetch = %d\n",
+           rv32i_tb->rv32i_pipe_tb->__PVT__inst__DOT__W_inst_fault_fetch);
   }
+}
+
+void store_bytes(uint8_t *bytes, const size_t size,
+                 unique_ptr<VerilatedContext> &context,
+                 unique_ptr<Vrv32i_pipe_tb> &rv32i_tb) {
+  bytes_to_pattern_file(bytes, size, "code_hex.txt");
+  rv32i_tb->write_mem("code_hex.txt");
 }
 
 void single_inst_test(unique_ptr<VerilatedContext> &context,
@@ -127,6 +141,25 @@ void misprediction(unique_ptr<VerilatedContext> &context,
   assert(a0 == 7);
 }
 
+void load_store_hazard(unique_ptr<VerilatedContext> &context,
+                       unique_ptr<Vrv32i_pipe_tb> &rv32i_tb) {
+  auto source = R"(
+    .section .data
+    five:
+    .byte 5, 0, 0, 0
+    .section .text
+    lw a0, 8(zero)
+    addi a0, a0, 7
+  )";
+  auto bytes = (uint8_t *)malloc(sizeof(uint8_t) * MAX_BYTES);
+  auto ok = rubble(source, bytes, MAX_BYTES);
+  assert(ok);
+  store_bytes(bytes, 12, context, rv32i_tb);
+  run_bytes(bytes, 12, context, rv32i_tb);
+  auto a0 = rv32i_tb->read_reg_file(10);
+  assert(a0 == 12);
+}
+
 int main(int argc, char *argv[]) {
   {
     unique_ptr<VerilatedContext> context(new VerilatedContext());
@@ -193,5 +226,16 @@ int main(int argc, char *argv[]) {
     svSetScope(scope);
 
     misprediction(context, rv32i_tb);
+  }
+  {
+    unique_ptr<VerilatedContext> context(new VerilatedContext());
+    unique_ptr<Vrv32i_pipe_tb> rv32i_tb(
+        new Vrv32i_pipe_tb(context.get(), "TOP"));
+
+    const svScope scope = svGetScopeFromName("TOP.rv32i_pipe_tb");
+    assert(scope); // Check for nullptr if scope not found
+    svSetScope(scope);
+
+    load_store_hazard(context, rv32i_tb);
   }
 }

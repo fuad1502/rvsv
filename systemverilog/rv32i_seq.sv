@@ -49,8 +49,9 @@ module rv32i_seq #(
   program_counter #(
       .XLEN(XLEN)
   ) program_counter_inst (
-      .addr(valE),
-      .jump(cond),
+      .addr (valE),
+      .jump (cond),
+      .stall(0),
       .*
   );
 

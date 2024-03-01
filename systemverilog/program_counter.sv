@@ -4,6 +4,7 @@ module program_counter #(
     output logic [XLEN-1:0] pc,
     input logic [XLEN-1:0] addr,
     input logic jump,
+    input logic stall,
     input logic clock,
     input logic reset_n
 );
@@ -21,6 +22,8 @@ module program_counter #(
   always_ff @(posedge clock) begin : pcUpdate
     if (!reset_n) begin
       pc <= '0;
+    end else if (stall) begin
+      pc <= pc;
     end else begin
       pc <= {next_pc[XLEN-1:1], 1'b0};
     end
