@@ -1,14 +1,17 @@
 #include "rubbler.h"
 #include <Vfetch_stage.h>
+#include <cstdint>
 #include <memory>
 #include <verilated.h>
 
 using namespace std;
 
 void write_asm_line_inst(unique_ptr<Vfetch_stage> &fetch,
-                               unique_ptr<VerilatedContext> &context,
-                               const char *asm_line) {
-  IData inst = decode_asm_line_ffi(asm_line);
+                         unique_ptr<VerilatedContext> &context,
+                         const char *asm_line) {
+  uint32_t inst;
+  auto ok = rubble_line(asm_line, &inst);
+  assert(ok);
   fetch->inst = inst;
   fetch->eval();
 }
@@ -20,7 +23,7 @@ int main(int argc, char *argv[]) {
   unique_ptr<Vfetch_stage> fetch(new Vfetch_stage(context.get(), "fetch"));
 
   // Test OP-IMM instruction
-  auto asm_line = "addi t2 t1 -3";
+  auto asm_line = "addi t2, t1, -3";
   write_asm_line_inst(fetch, context, asm_line);
   assert(fetch->rd == 7);
   assert(fetch->rs1 == 6);
@@ -30,7 +33,7 @@ int main(int argc, char *argv[]) {
   assert(fetch->mem_read_en == 0);
 
   // Test U instruction
-  asm_line = "lui t2 -3";
+  asm_line = "lui t2, -3";
   write_asm_line_inst(fetch, context, asm_line);
   assert(fetch->rd == 7);
   assert(fetch->rs1 == 0);
@@ -40,7 +43,7 @@ int main(int argc, char *argv[]) {
   assert(fetch->mem_read_en == 0);
 
   // Test OP instruction
-  asm_line = "add t2 t1 t0";
+  asm_line = "add t2, t1, t0";
   write_asm_line_inst(fetch, context, asm_line);
   assert(fetch->rd == 7);
   assert(fetch->rs1 == 6);
@@ -50,7 +53,7 @@ int main(int argc, char *argv[]) {
   assert(fetch->mem_read_en == 0);
 
   // Test JAL instruction
-  asm_line = "jal t2 -3";
+  asm_line = "jal t2, -3";
   write_asm_line_inst(fetch, context, asm_line);
   assert(fetch->rd == 7);
   assert(fetch->rs1 == 0);
@@ -60,7 +63,7 @@ int main(int argc, char *argv[]) {
   assert(fetch->mem_read_en == 0);
 
   // Test JALR instruction
-  asm_line = "jalr t2 t1 -3";
+  asm_line = "jalr t2, t1, -3";
   write_asm_line_inst(fetch, context, asm_line);
   assert(fetch->rd == 7);
   assert(fetch->rs1 == 6);
@@ -70,7 +73,7 @@ int main(int argc, char *argv[]) {
   assert(fetch->mem_read_en == 0);
 
   // Test B instruction
-  asm_line = "beq t2 t1 -3";
+  asm_line = "beq t2, t1, -3";
   write_asm_line_inst(fetch, context, asm_line);
   assert(fetch->rd == 0);
   assert(fetch->rs1 == 7);
@@ -80,7 +83,7 @@ int main(int argc, char *argv[]) {
   assert(fetch->mem_read_en == 0);
 
   // Test load instruction
-  asm_line = "lh t2 -3(t1)";
+  asm_line = "lh t2, -3(t1)";
   write_asm_line_inst(fetch, context, asm_line);
   assert(fetch->rd == 7);
   assert(fetch->rs1 == 6);
@@ -90,12 +93,12 @@ int main(int argc, char *argv[]) {
   assert(fetch->mem_read_en == 1);
   assert(fetch->mem_width == 1);
   assert(fetch->sign_extend == 1);
-  asm_line = "lhu t2 -3(t1)";
+  asm_line = "lhu t2, -3(t1)";
   write_asm_line_inst(fetch, context, asm_line);
   assert(fetch->sign_extend == 0);
 
   // Test store instruction
-  asm_line = "sh t2 -3(t1)";
+  asm_line = "sh t2, -3(t1)";
   write_asm_line_inst(fetch, context, asm_line);
   assert(fetch->rd == 0);
   assert(fetch->rs1 == 6);
