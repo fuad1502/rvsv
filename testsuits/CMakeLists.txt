@@ -32,5 +32,7 @@ add_executable(rv32i_seq_testsuit rv32i_seq_testsuit.cpp)
 target_link_libraries(rv32i_seq_testsuit PRIVATE ${RUBBLER_LIB_DEBUG})
 verilate(rv32i_seq_testsuit 
 INCLUDE_DIRS ../systemverilog/ 
-SOURCES ../systemverilog/rv32i_seq.sv)
+SOURCES ../systemverilog/rv32i_seq_tb.sv
+VERILATOR_ARGS --vpi --timing)
+file(COPY ${CMAKE_SOURCE_DIR}/testsuits/asm_tests/ DESTINATION ${CMAKE_BINARY_DIR}/testsuits/asm_tests)
 add_test(NAME rv32i_seq_testsuit COMMAND rv32i_seq_testsuit)

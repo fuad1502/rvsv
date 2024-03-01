@@ -35,13 +35,20 @@ module execute_stage #(
         .func7(func7),
         .inst_fault(inst_fault_alu)
       );
-      OP_IMM, JALR:
+      OP_IMM:
       valE = alu_op_imm(.val1(valA), .val2(valC), .func3(func3), .inst_fault(inst_fault_alu));
-      AUIPC, JAL:
-      valE = alu_op_imm(.val1(pc), .val2(valC), .func3(ADDI), .inst_fault(inst_fault_alu));
+      AUIPC: valE = alu_op_imm(.val1(pc), .val2(valC), .func3(ADDI), .inst_fault(inst_fault_alu));
       LOAD, STORE:
       valE = alu_op_imm(.val1(valA), .val2(valC), .func3(ADDI), .inst_fault(inst_fault_alu));
       LUI: valE = valC;
+      JAL: begin
+        valE = alu_op_imm(.val1(pc), .val2(valC), .func3(ADDI), .inst_fault(inst_fault_alu));
+        cond = 1;
+      end
+      JALR: begin
+        valE = alu_op_imm(.val1(valA), .val2(valC), .func3(func3), .inst_fault(inst_fault_alu));
+        cond = 1;
+      end
       BRANCH: begin
         valE = alu_op_imm(.val1(pc), .val2(valC), .func3(ADDI), .inst_fault(inst_fault_alu));
         cond = comp(.val1(valA), .val2(valB), .func3(func3), .inst_fault(inst_fault_cond));

@@ -138,11 +138,13 @@ int main(int argc, char *argv[]) {
   evaluate(execute_stage, asm_line, t1, t0, pc);
   expected_valE = (0x12345678 & 0x001FFFFE | 0xFFE00000) + pc;
   assert(execute_stage->valE == expected_valE);
+  assert(execute_stage->cond == 1);
   // Test JALR
   asm_line = "jalr t2, t1, 0x12345678";
   evaluate(execute_stage, asm_line, t1, t0, pc);
   expected_valE = (0x12345678 & 0x00000FFF) + t1;
   assert(execute_stage->valE == expected_valE);
+  assert(execute_stage->cond == 1);
 
   ////////////////////////// TEST BRANCH INSTRUCTIONS //////////////////////////
   // Test BEQ

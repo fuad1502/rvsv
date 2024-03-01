@@ -5,14 +5,9 @@ module rv32i_seq #(
     int ILEN = 32
 ) (
     output logic inst_fault,
-    input logic clock,
-    input logic reset_n
+    input  logic clock,
+    input  logic reset_n
 );
-  export "DPI-C" function read_mem;
-  export "DPI-C" function write_mem;
-  export "DPI-C" function read_inst_mem;
-  export "DPI-C" function write_inst_mem;
-
   import opcodes::*;
   // Output of program counter
   wire [XLEN-1:0] pc;
@@ -100,27 +95,5 @@ module rv32i_seq #(
       .write_en(mem_write_en),
       .*
   );
-
-  function automatic int read_mem(int addr, int number_of_bytes);
-    read_mem = 0;
-    for (int i = 0; i < number_of_bytes; i++) begin
-      read_mem += int'(memory_inst.mem[addr+i][7:0]) << (8 * i);
-    end
-  endfunction
-
-  function automatic int read_inst_mem(int addr, int number_of_bytes);
-    read_inst_mem = 0;
-    for (int i = 0; i < number_of_bytes; i++) begin
-      read_inst_mem += int'(inst_mem_inst.mem[addr+i][7:0]) << (8 * i);
-    end
-  endfunction
-
-  function automatic write_mem(string file_name);
-    $readmemh(file_name, memory_inst.mem);
-  endfunction
-
-  function automatic write_inst_mem(string file_name);
-    $readmemh(file_name, inst_mem_inst.mem);
-  endfunction
 
 endmodule
