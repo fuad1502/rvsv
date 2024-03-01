@@ -15,6 +15,11 @@ module rv32i_pipe_tb #(
   wire  fault  /* verilator public */;
 
   initial begin
+    reset_n = 0;
+    clock   = 0;
+    #1;
+    clock = 1;
+    #1;
     reset_n = 1;
   end
 

@@ -26,13 +26,6 @@ void run_bytes(uint8_t *bytes, const size_t size,
                unique_ptr<Vrv32i_pipe_tb> &rv32i_tb) {
   bytes_to_pattern_file(bytes, size, "code_hex.txt");
   rv32i_tb->write_inst_mem("code_hex.txt");
-  for (int i = 0; i < PIPE_DELAY; i++) {
-    rv32i_tb->eval();
-    context->timeInc(1);
-    rv32i_tb->eval();
-    context->timeInc(1);
-    printf("a0 = %d\n", rv32i_tb->read_reg_file(10));
-  }
   while (rv32i_tb->rv32i_pipe_tb->fault == 0) {
     rv32i_tb->eval();
     context->timeInc(1);
@@ -117,6 +110,23 @@ void no_hazard_1(unique_ptr<VerilatedContext> &context,
   assert(a0 == 15);
 }
 
+void misprediction(unique_ptr<VerilatedContext> &context,
+                   unique_ptr<Vrv32i_pipe_tb> &rv32i_tb) {
+  auto source = R"(
+    addi a0, zero, 6
+    jal zero, x
+    add a0, a0, a0
+    x:
+    addi a0, a0, 1
+  )";
+  auto bytes = (uint8_t *)malloc(sizeof(uint8_t) * MAX_BYTES);
+  auto ok = rubble(source, bytes, MAX_BYTES);
+  assert(ok);
+  run_bytes(bytes, 16, context, rv32i_tb);
+  auto a0 = rv32i_tb->read_reg_file(10);
+  assert(a0 == 7);
+}
+
 int main(int argc, char *argv[]) {
   {
     unique_ptr<VerilatedContext> context(new VerilatedContext());
@@ -172,5 +182,16 @@ int main(int argc, char *argv[]) {
     svSetScope(scope);
 
     no_hazard_1(context, rv32i_tb);
+  }
+  {
+    unique_ptr<VerilatedContext> context(new VerilatedContext());
+    unique_ptr<Vrv32i_pipe_tb> rv32i_tb(
+        new Vrv32i_pipe_tb(context.get(), "TOP"));
+
+    const svScope scope = svGetScopeFromName("TOP.rv32i_pipe_tb");
+    assert(scope); // Check for nullptr if scope not found
+    svSetScope(scope);
+
+    misprediction(context, rv32i_tb);
   }
 }

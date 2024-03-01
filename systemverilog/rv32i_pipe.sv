@@ -1,4 +1,5 @@
 `include "opcodes.sv"
+`include "function_codes.sv"
 
 module rv32i_pipe #(
     int XLEN = 32,
@@ -9,6 +10,30 @@ module rv32i_pipe #(
     input  logic reset_n
 );
   import opcodes::*;
+  import function_codes::*;
+
+  /////////////////////////////////////////////////
+  // MISPREDICTION BUBBLES                       //
+  /////////////////////////////////////////////////
+  logic reset_d, reset_e, reset_m, reset_w;
+  always_comb begin : misprediction_bubbles
+    if (!reset_n) begin
+      reset_d = 0;
+      reset_e = 0;
+      reset_m = 0;
+      reset_w = 0;
+    end else if (e_cond == 1) begin
+      reset_d = 0;
+      reset_e = 0;
+      reset_m = 1;
+      reset_w = 1;
+    end else begin
+      reset_d = 1;
+      reset_e = 1;
+      reset_m = 1;
+      reset_w = 1;
+    end
+  end
 
   /////////////////////////////////////////////////
   // WRITE BACK STAGE                            //
@@ -32,26 +57,49 @@ module rv32i_pipe #(
   logic [XLEN-1:0] W_valM;
   logic W_mem_fault;
   always_ff @(posedge clock) begin : W_stat
-    W_pc <= M_pc;
-    W_opcode <= M_opcode;
-    W_func7 <= M_func7;
-    W_func3 <= M_func3;
-    W_valC <= M_valC;
-    W_rs1 <= M_rs1;
-    W_rs2 <= M_rs2;
-    W_rd <= M_rd;
-    W_mem_write_en <= M_mem_write_en;
-    W_mem_read_en <= M_mem_read_en;
-    W_mem_width <= M_mem_width;
-    W_sign_extend <= M_sign_extend;
-    W_inst_fault_fetch <= M_inst_fault_fetch;
-    W_valA <= M_valA;
-    W_valB <= M_valB;
-    W_valE <= M_valE;
-    W_cond <= M_cond;
-    W_inst_fault_execute <= M_inst_fault_execute;
-    W_valM <= m_valM;
-    W_mem_fault <= m_mem_fault;
+    if (!reset_w) begin
+      W_pc <= 0;
+      W_opcode <= OP;
+      W_func7 <= ADD[9:3];
+      W_func3 <= ADD[2:0];
+      W_valC <= 0;
+      W_rs1 <= 0;
+      W_rs2 <= 0;
+      W_rd <= 0;
+      W_mem_write_en <= 0;
+      W_mem_read_en <= 0;
+      W_mem_width <= 0;
+      W_sign_extend <= 0;
+      W_inst_fault_fetch <= 0;
+      W_valA <= 0;
+      W_valB <= 0;
+      W_valE <= 0;
+      W_cond <= 0;
+      W_inst_fault_execute <= 0;
+      W_valM <= 0;
+      W_mem_fault <= 0;
+    end else begin
+      W_pc <= M_pc;
+      W_opcode <= M_opcode;
+      W_func7 <= M_func7;
+      W_func3 <= M_func3;
+      W_valC <= M_valC;
+      W_rs1 <= M_rs1;
+      W_rs2 <= M_rs2;
+      W_rd <= M_rd;
+      W_mem_write_en <= M_mem_write_en;
+      W_mem_read_en <= M_mem_read_en;
+      W_mem_width <= M_mem_width;
+      W_sign_extend <= M_sign_extend;
+      W_inst_fault_fetch <= M_inst_fault_fetch;
+      W_valA <= M_valA;
+      W_valB <= M_valB;
+      W_valE <= M_valE;
+      W_cond <= M_cond;
+      W_inst_fault_execute <= M_inst_fault_execute;
+      W_valM <= m_valM;
+      W_mem_fault <= m_mem_fault;
+    end
   end
   // Output of write back stage
   logic [XLEN-1:0] w_valR;
@@ -139,19 +187,35 @@ module rv32i_pipe #(
   logic D_sign_extend;
   logic D_inst_fault_fetch;
   always_ff @(posedge clock) begin : D_stat
-    D_pc <= f_pc;
-    D_opcode <= f_opcode;
-    D_func7 <= f_func7;
-    D_func3 <= f_func3;
-    D_valC <= f_valC;
-    D_rs1 <= f_rs1;
-    D_rs2 <= f_rs2;
-    D_rd <= f_rd;
-    D_mem_write_en <= f_mem_write_en;
-    D_mem_read_en <= f_mem_read_en;
-    D_mem_width <= f_mem_width;
-    D_sign_extend <= f_sign_extend;
-    D_inst_fault_fetch <= f_inst_fault_fetch;
+    if (!reset_d) begin
+      D_pc <= 0;
+      D_opcode <= OP;
+      D_func7 <= ADD[9:3];
+      D_func3 <= ADD[2:0];
+      D_valC <= 0;
+      D_rs1 <= 0;
+      D_rs2 <= 0;
+      D_rd <= 0;
+      D_mem_write_en <= 0;
+      D_mem_read_en <= 0;
+      D_mem_width <= 0;
+      D_sign_extend <= 0;
+      D_inst_fault_fetch <= 0;
+    end else begin
+      D_pc <= f_pc;
+      D_opcode <= f_opcode;
+      D_func7 <= f_func7;
+      D_func3 <= f_func3;
+      D_valC <= f_valC;
+      D_rs1 <= f_rs1;
+      D_rs2 <= f_rs2;
+      D_rd <= f_rd;
+      D_mem_write_en <= f_mem_write_en;
+      D_mem_read_en <= f_mem_read_en;
+      D_mem_width <= f_mem_width;
+      D_sign_extend <= f_sign_extend;
+      D_inst_fault_fetch <= f_inst_fault_fetch;
+    end
   end
   // Output of fetch stage
   logic [XLEN-1:0] d_valA, d_valB;
@@ -233,21 +297,39 @@ module rv32i_pipe #(
   logic E_inst_fault_fetch;
   logic [XLEN-1:0] E_valA, E_valB;
   always_ff @(posedge clock) begin : E_stat
-    E_pc <= D_pc;
-    E_opcode <= D_opcode;
-    E_func7 <= D_func7;
-    E_func3 <= D_func3;
-    E_valC <= D_valC;
-    E_rs1 <= D_rs1;
-    E_rs2 <= D_rs2;
-    E_rd <= D_rd;
-    E_mem_write_en <= D_mem_write_en;
-    E_mem_read_en <= D_mem_read_en;
-    E_mem_width <= D_mem_width;
-    E_sign_extend <= D_sign_extend;
-    E_inst_fault_fetch <= D_inst_fault_fetch;
-    E_valA <= d_valA;
-    E_valB <= d_valB;
+    if (!reset_e) begin
+      E_pc <= 0;
+      E_opcode <= OP;
+      E_func7 <= ADD[9:3];
+      E_func3 <= ADD[2:0];
+      E_valC <= 0;
+      E_rs1 <= 0;
+      E_rs2 <= 0;
+      E_rd <= 0;
+      E_mem_write_en <= 0;
+      E_mem_read_en <= 0;
+      E_mem_width <= 0;
+      E_sign_extend <= 0;
+      E_inst_fault_fetch <= 0;
+      E_valA <= 0;
+      E_valB <= 0;
+    end else begin
+      E_pc <= D_pc;
+      E_opcode <= D_opcode;
+      E_func7 <= D_func7;
+      E_func3 <= D_func3;
+      E_valC <= D_valC;
+      E_rs1 <= D_rs1;
+      E_rs2 <= D_rs2;
+      E_rd <= D_rd;
+      E_mem_write_en <= D_mem_write_en;
+      E_mem_read_en <= D_mem_read_en;
+      E_mem_width <= D_mem_width;
+      E_sign_extend <= D_sign_extend;
+      E_inst_fault_fetch <= D_inst_fault_fetch;
+      E_valA <= d_valA;
+      E_valB <= d_valB;
+    end
   end
   // Output of execute stage
   wire [XLEN-1:0] e_valE;
@@ -290,24 +372,45 @@ module rv32i_pipe #(
   logic M_cond;
   logic M_inst_fault_execute;
   always_ff @(posedge clock) begin : M_stat
-    M_pc <= E_pc;
-    M_opcode <= E_opcode;
-    M_func7 <= E_func7;
-    M_func3 <= E_func3;
-    M_valC <= E_valC;
-    M_rs1 <= E_rs1;
-    M_rs2 <= E_rs2;
-    M_rd <= E_rd;
-    M_mem_write_en <= E_mem_write_en;
-    M_mem_read_en <= E_mem_read_en;
-    M_mem_width <= E_mem_width;
-    M_sign_extend <= E_sign_extend;
-    M_inst_fault_fetch <= E_inst_fault_fetch;
-    M_valA <= E_valA;
-    M_valB <= E_valB;
-    M_valE <= e_valE;
-    M_cond <= e_cond;
-    M_inst_fault_execute <= e_inst_fault_execute;
+    if (!reset_m) begin
+      M_pc <= 0;
+      M_opcode <= OP;
+      M_func7 <= ADD[9:3];
+      M_func3 <= ADD[2:0];
+      M_valC <= 0;
+      M_rs1 <= 0;
+      M_rs2 <= 0;
+      M_rd <= 0;
+      M_mem_write_en <= 0;
+      M_mem_read_en <= 0;
+      M_mem_width <= 0;
+      M_sign_extend <= 0;
+      M_inst_fault_fetch <= 0;
+      M_valA <= 0;
+      M_valB <= 0;
+      M_valE <= 0;
+      M_cond <= 0;
+      M_inst_fault_execute <= 0;
+    end else begin
+      M_pc <= E_pc;
+      M_opcode <= E_opcode;
+      M_func7 <= E_func7;
+      M_func3 <= E_func3;
+      M_valC <= E_valC;
+      M_rs1 <= E_rs1;
+      M_rs2 <= E_rs2;
+      M_rd <= E_rd;
+      M_mem_write_en <= E_mem_write_en;
+      M_mem_read_en <= E_mem_read_en;
+      M_mem_width <= E_mem_width;
+      M_sign_extend <= E_sign_extend;
+      M_inst_fault_fetch <= E_inst_fault_fetch;
+      M_valA <= E_valA;
+      M_valB <= E_valB;
+      M_valE <= e_valE;
+      M_cond <= e_cond;
+      M_inst_fault_execute <= e_inst_fault_execute;
+    end
   end
   // Output of memory stage
   wire [XLEN-1:0] m_valM;
