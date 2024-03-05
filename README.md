@@ -1,5 +1,7 @@
 # RVSV
 
+[![CI](https://github.com/fuad1502/rvsv/actions/workflows/CI.yml/badge.svg)](https://github.com/fuad1502/rvsv/actions/workflows/CI.yml)
+
 `RVSV` is a SystemVerilog implementation of a 5-stage pipelined RISC-V CPU.
 
 # Top level modules
