@@ -1,0 +1,18 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: fuad1502/verilator-cmake-rust
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: configure
+        run: cmake -Bbuild -S.
+      - name: build
+        run: cmake --build build
+      - name: test
+        run: cd build && ctest
+
