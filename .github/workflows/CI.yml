@@ -9,10 +9,12 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
-      - name: configure
+      - name: Set rustup
+        run: rustup default stable
+      - name: Configure
         run: cmake -Bbuild -S.
-      - name: build
+      - name: Build
         run: cmake --build build
-      - name: test
+      - name: Test
         run: cd build && ctest
 
