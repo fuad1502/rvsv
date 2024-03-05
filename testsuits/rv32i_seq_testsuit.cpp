@@ -24,9 +24,10 @@ void test_fibonacci(int n, int expected_result,
                     unique_ptr<VerilatedContext> &context,
                     unique_ptr<Vrv32i_seq_tb> &rv32i_tb) {
   auto bytes = (uint8_t *)malloc(sizeof(uint8_t) * MAX_BYTES);
-  auto ok = rubble_file("asm_tests/fibonacci.asm", bytes, MAX_BYTES);
+  uintptr_t size = MAX_BYTES;
+  auto ok = rubble_file("asm_tests/fibonacci.asm", bytes, &size);
   assert(ok);
-  bytes_to_pattern_file(bytes, 128, "code_hex.txt");
+  bytes_to_pattern_file(bytes, size, "code_hex.txt");
   rv32i_tb->write_inst_mem("code_hex.txt");
   rv32i_tb->write_reg_file(10, n);
   while (rv32i_tb->rv32i_seq_tb->inst_fault != 1) {

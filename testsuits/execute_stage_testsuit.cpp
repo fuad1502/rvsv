@@ -253,7 +253,7 @@ int main(int argc, char *argv[]) {
 void evaluate(unique_ptr<Vexecute_stage_tb> &execute_stage,
               const char *asm_line, int valA, int valB, int pc) {
   uint32_t inst;
-  auto ok = rubble_line(asm_line, &inst);
+  auto ok = rubble_inst(asm_line, &inst);
   assert(ok);
   printf("%032b\n", inst);
   execute_stage->inst = inst;

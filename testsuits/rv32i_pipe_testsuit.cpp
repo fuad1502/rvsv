@@ -47,7 +47,8 @@ void single_inst_test(unique_ptr<VerilatedContext> &context,
     addi a0, zero, 6
   )";
   auto bytes = (uint8_t *)malloc(sizeof(uint8_t) * MAX_BYTES);
-  auto ok = rubble(source, bytes, MAX_BYTES);
+  uintptr_t size = MAX_BYTES;
+  auto ok = rubble(source, bytes, &size);
   assert(ok);
   run_bytes(bytes, 4, context, rv32i_tb);
   auto a0 = rv32i_tb->read_reg_file(10);
@@ -61,7 +62,8 @@ void data_hazard_1(unique_ptr<VerilatedContext> &context,
     addi a0, a0, 9
   )";
   auto bytes = (uint8_t *)malloc(sizeof(uint8_t) * MAX_BYTES);
-  auto ok = rubble(source, bytes, MAX_BYTES);
+  uintptr_t size = MAX_BYTES;
+  auto ok = rubble(source, bytes, &size);
   assert(ok);
   run_bytes(bytes, 8, context, rv32i_tb);
   auto a0 = rv32i_tb->read_reg_file(10);
@@ -76,7 +78,8 @@ void data_hazard_2(unique_ptr<VerilatedContext> &context,
     addi a0, a0, 9
   )";
   auto bytes = (uint8_t *)malloc(sizeof(uint8_t) * MAX_BYTES);
-  auto ok = rubble(source, bytes, MAX_BYTES);
+  uintptr_t size = MAX_BYTES;
+  auto ok = rubble(source, bytes, &size);
   assert(ok);
   run_bytes(bytes, 12, context, rv32i_tb);
   auto a0 = rv32i_tb->read_reg_file(10);
@@ -92,7 +95,8 @@ void data_hazard_3(unique_ptr<VerilatedContext> &context,
     addi a0, a0, 9
   )";
   auto bytes = (uint8_t *)malloc(sizeof(uint8_t) * MAX_BYTES);
-  auto ok = rubble(source, bytes, MAX_BYTES);
+  uintptr_t size = MAX_BYTES;
+  auto ok = rubble(source, bytes, &size);
   assert(ok);
   run_bytes(bytes, 16, context, rv32i_tb);
   auto a0 = rv32i_tb->read_reg_file(10);
@@ -109,7 +113,8 @@ void no_hazard_1(unique_ptr<VerilatedContext> &context,
     addi a0, a0, 9
   )";
   auto bytes = (uint8_t *)malloc(sizeof(uint8_t) * MAX_BYTES);
-  auto ok = rubble(source, bytes, MAX_BYTES);
+  uintptr_t size = MAX_BYTES;
+  auto ok = rubble(source, bytes, &size);
   assert(ok);
   run_bytes(bytes, 20, context, rv32i_tb);
   auto a0 = rv32i_tb->read_reg_file(10);
@@ -126,7 +131,8 @@ void misprediction(unique_ptr<VerilatedContext> &context,
     addi a0, a0, 1
   )";
   auto bytes = (uint8_t *)malloc(sizeof(uint8_t) * MAX_BYTES);
-  auto ok = rubble(source, bytes, MAX_BYTES);
+  uintptr_t size = MAX_BYTES;
+  auto ok = rubble(source, bytes, &size);
   assert(ok);
   run_bytes(bytes, 16, context, rv32i_tb);
   auto a0 = rv32i_tb->read_reg_file(10);
@@ -144,7 +150,8 @@ void load_store_hazard(unique_ptr<VerilatedContext> &context,
     addi a0, a0, 7
   )";
   auto bytes = (uint8_t *)malloc(sizeof(uint8_t) * MAX_BYTES);
-  auto ok = rubble(source, bytes, MAX_BYTES);
+  uintptr_t size = MAX_BYTES;
+  auto ok = rubble(source, bytes, &size);
   assert(ok);
   store_bytes(bytes, 12, context, rv32i_tb);
   run_bytes(bytes, 12, context, rv32i_tb);
@@ -156,7 +163,8 @@ void test_fibonacci(int n, int expected_result,
                     unique_ptr<VerilatedContext> &context,
                     unique_ptr<Vrv32i_pipe_tb> &rv32i_tb) {
   auto bytes = (uint8_t *)malloc(sizeof(uint8_t) * MAX_BYTES);
-  auto ok = rubble_file("asm_tests/fibonacci.asm", bytes, MAX_BYTES);
+  uintptr_t size = MAX_BYTES;
+  auto ok = rubble_file("asm_tests/fibonacci.asm", bytes, &size);
   assert(ok);
   rv32i_tb->write_reg_file(10, n);
   run_bytes(bytes, 256, context, rv32i_tb);

@@ -6,19 +6,18 @@ project(rv32i-sv)
 find_package(verilator REQUIRED)
 
 include(ExternalProject)
-set_directory_properties(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/rust)
 ExternalProject_Add(
-  rubbler
-  DOWNLOAD_COMMAND ""
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND cargo build COMMAND cargo build --release
-  BINARY_DIR ${CMAKE_SOURCE_DIR}/rubbler
-  INSTALL_COMMAND ""
-  LOG_BUILD ON
+	rubbler
+	GIT_REPOSITORY https://github.com/fuad1502/rubbler.git
+	DOWNLOAD_DIR ${CMAKE_BINARY_DIR}
+	SOURCE_DIR ${CMAKE_BINARY_DIR}/rubbler
+	BINARY_DIR ${CMAKE_BINARY_DIR}/rubbler
+	CONFIGURE_COMMAND ""
+	INSTALL_COMMAND ""
+	BUILD_COMMAND cargo build --release
 )
-include_directories(${CMAKE_SOURCE_DIR}/rubbler)
-set(RUBBLER_LIB_DEBUG ${CMAKE_SOURCE_DIR}/rubbler/target/debug/librubbler.a)
-set(RUBBLER_LIB_RELEASE ${CMAKE_SOURCE_DIR}/rubbler/target/release/librubbler.a)
+set(RUBBLER_LIB ${CMAKE_BINARY_DIR}/rubbler/target/release/librubbler.a)
+include_directories(${CMAKE_BINARY_DIR}/rubbler/target)
 
 enable_testing()
 add_subdirectory(testsuits)

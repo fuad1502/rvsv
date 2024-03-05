@@ -10,7 +10,7 @@ void write_asm_line_inst(unique_ptr<Vfetch_stage> &fetch,
                          unique_ptr<VerilatedContext> &context,
                          const char *asm_line) {
   uint32_t inst;
-  auto ok = rubble_line(asm_line, &inst);
+  auto ok = rubble_inst(asm_line, &inst);
   assert(ok);
   fetch->inst = inst;
   fetch->eval();
